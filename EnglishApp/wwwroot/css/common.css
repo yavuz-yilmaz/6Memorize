@@ -1,0 +1,194 @@
+/* Genel stil tanımlamaları */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #333;
+}
+
+/* Kart stilleri */
+.card {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+.hover-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.form-floating > label {
+    padding-left: 1rem;
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+/* Buton stilleri */
+.btn {
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Rozet stilleri */
+.badge {
+    font-weight: 500;
+    padding: 0.4em 0.7em;
+}
+
+/* Tablo stilleri */
+.table > tbody > tr:hover {
+    background-color: #f8f9fa;
+    border-left-color: #3498db;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* Form stilleri */
+.form-floating > label {
+    padding-left: 1rem;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+/* Saydamlık sınıfları */
+.bg-opacity-10 {
+    --bs-bg-opacity: 0.1;
+}
+
+/* Kelime küçük resim stilleri */
+.word-thumb {
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    border-radius: 6px;
+}
+
+.word-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.word-thumb-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 1.2rem;
+}
+
+/* Büyük resim fit etme */
+.img-fit {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Navigasyon menüsü için hover efekti */
+.hover-effect:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+/* Filtre butonları */
+.filter-btn.active {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+/* İlerleme çubuğu renkleri */
+.progress-high {
+    background-color: #2ecc71;
+}
+
+.progress-medium {
+    background-color: #3498db;
+}
+
+.progress-low {
+    background-color: #f39c12;
+}
+
+.progress-very-low {
+    background-color: #e74c3c;
+}
+
+/* Kategori adı */
+.category-name {
+    background-color: #f8f9fa;
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 13px;
+    border: 1px solid #dee2e6;
+}
+
+/* Liste öğesi stilleri */
+.list-group-item {
+    transition: all 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.list-group-item.active {
+    border-left: 4px solid #3498db;
+}
+
+/* Ses çalma bağlantısı */
+.play-audio {
+    font-size: 0.75rem;
+    text-decoration: none;
+}
+
+.play-audio:hover {
+    text-decoration: underline;
+}
+
+/* Wordle oyunu için stil tanımlamaları */
+.cell {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.5s, background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* Arkaplan gradyan stilleri */
+.bg-gradient-primary {
+    background-image: linear-gradient(135deg, #056bb3 0%, #3498db 100%);
+}
+
+.bg-gradient-success {
+    background-image: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+}
+
+.bg-gradient-warning {
+    background-image: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+}
+
+.bg-gradient-info {
+    background-image: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+.bg-gradient-wordle {
+    background-image: linear-gradient(135deg, #6c5ce7 0%, #3c40c6 100%);
+}

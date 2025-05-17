@@ -7,7 +7,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-lg border-0 rounded-lg">
-                <div class="card-header bg-gradient text-black d-flex justify-content-between align-items-center">
+                <div class="card-header bg-gradient-wordle text-black d-flex justify-content-between align-items-center">
                     <h3 class="mb-0"><i class="fas fa-puzzle-piece me-2"></i>Wordle Game</h3>
                 </div>
 
@@ -72,228 +72,19 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/wordle.js"></script>
     <script>
         $(document).ready(function() {
-            // Hide the word securely
-            const word = "@Model.Word.EngWordName.ToLower()";
-            const meaning = "@Model.Word.TurWordName";
-
-            // Game variables
-            const WORD_LENGTH = @Model.WordLength;
-            const MAX_GUESSES = 6;
-            let currentGuess = 0;
-            let currentPosition = 0;
-            let guesses = Array(MAX_GUESSES).fill().map(() => Array(WORD_LENGTH).fill(''));
-            let gameOver = false;
-
-            // Create the game board
-            function createBoard() {
-                const boardContainer = $("#board-container");
-                boardContainer.empty();
-
-                for (let i = 0; i < MAX_GUESSES; i++) {
-                    const row = $("<div>").addClass("guess-row d-flex mb-2");
-
-                    for (let j = 0; j < WORD_LENGTH; j++) {
-                        const cell = $("<div>").addClass("cell border d-flex justify-content-center align-items-center mx-1")
-                            .css({
-                                "width": "50px",
-                                "height": "50px",
-                                "font-size": "24px",
-                                "font-weight": "bold",
-                                "border-radius": "8px",
-                                "transition": "all 0.3s ease"
-                            });
-                        row.append(cell);
-                    }
-
-                    boardContainer.append(row);
-                }
-
-                // Highlight the first row as active
-                $(".guess-row").first().find(".cell").addClass("border-primary");
-                $("#attempts-counter").text(`1/${MAX_GUESSES}`);
-            }
-
-            function normalizeEnglishInput(text) {
-                // Türkçe karakterleri İngilizce eşdeğerlerine dönüştürme
-                const charMap = {
-                    'ı': 'i', 'ğ': 'g', 'ü': 'u', 'ş': 's', 'ö': 'o', 'ç': 'c',
-                    'İ': 'I', 'Ğ': 'G', 'Ü': 'U', 'Ş': 'S', 'Ö': 'O', 'Ç': 'C'
-                };
-
-                return text.split('').map(char => charMap[char] || char).join('');
-            }
-
-            // Check the guess
-            function checkGuess() {
-                const input = $("#guess-input");
-                const rawGuess = input.val().toLowerCase();
-
-                const guess = normalizeEnglishInput(rawGuess);
-                if (guess.length !== WORD_LENGTH) {
-                    showMessage(`Please enter a ${WORD_LENGTH}-letter word!`, "warning");
-                    return;
-                }
-
-                // Check letters and update colors
-                const row = $(".guess-row").eq(currentGuess);
-                const letterCount = {};
-
-                // Count how many of each letter are in the word
-                for (let i = 0; i < word.length; i++) {
-                    letterCount[word[i]] = (letterCount[word[i]] || 0) + 1;
-                }
-
-                // First check for exact matches and subtract from letterCount
-                for (let i = 0; i < WORD_LENGTH; i++) {
-                    if (guess[i] === word[i]) {
-                        letterCount[guess[i]]--;
-                    }
-                }
-
-                // Now check all letters and update colors with animation
-                for (let i = 0; i < WORD_LENGTH; i++) {
-                    const cell = row.children().eq(i);
-                    const letter = guess[i];
-
-                    // Flip animation
-                    setTimeout(() => {
-                        cell.css("transform", "rotateX(90deg)");
-
-                        setTimeout(() => {
-                            if (letter === word[i]) {
-                                // Exact match - green
-                                cell.css("background-color", "#198754").css("color", "white")
-                                    .css("border-color", "#198754");
-                            } else if (word.includes(letter) && letterCount[letter] > 0) {
-                                // In word but wrong position - yellow
-                                cell.css("background-color", "#ffc107").css("color", "black")
-                                    .css("border-color", "#ffc107");
-                                letterCount[letter]--; // Decrease the count for this letter
-                            } else {
-                                // Not in word or all occurrences used - gray
-                                cell.css("background-color", "#6c757d").css("color", "white")
-                                    .css("border-color", "#6c757d");
-                            }
-
-                            // Flip back
-                            cell.css("transform", "rotateX(0deg)");
-                        }, 250);
-                    }, i * 200);
-                }
-
-                // Clear input box
-                input.val("");
-
-                // Check results
-                if (guess === word) {
-                    setTimeout(() => {
-                        gameOver = true;
-                        showResult(true);
-                    }, WORD_LENGTH * 200 + 300);
-                } else {
-                    currentGuess++;
-
-                    if (currentGuess >= MAX_GUESSES) {
-                        setTimeout(() => {
-                            gameOver = true;
-                            showResult(false);
-                        }, WORD_LENGTH * 200 + 300);
-                    } else {
-                        // Update active row
-                        setTimeout(() => {
-                            $(".guess-row").removeClass("active").find(".cell").removeClass("border-primary");
-                            $(".guess-row").eq(currentGuess).addClass("active").find(".cell").addClass("border-primary");
-                            $("#attempts-counter").text(`${currentGuess + 1}/${MAX_GUESSES}`);
-                        }, WORD_LENGTH * 200 + 300);
-                    }
-                }
-            }
-
-            // Show results
-            function showResult(win) {
-                const resultContainer = $("#result-container");
-                const resultMessage = $("#result-message");
-                const wordMeaning = $("#word-meaning");
-
-                if (win) {
-                    resultMessage.html('<i class="fas fa-trophy text-warning me-2"></i> Congratulations! You found the word.');
-                } else {
-                    resultMessage.html('<i class="fas fa-times-circle text-danger me-2"></i> Sorry, you didn\'t find the correct word.');
-                    resultMessage.append(`<div class="mt-2">Correct answer: <strong>${word.toUpperCase()}</strong></div>`);
-                }
-
-                wordMeaning.html(`<i class="fas fa-language me-2"></i> Word meaning: <strong>${meaning}</strong>`);
-                resultContainer.fadeIn();
-
-                // Hide message
-                $("#message").hide();
-            }
-
-            // Show message
-            function showMessage(text, type) {
-                const message = $("#message");
-                message.removeClass("alert-success alert-danger alert-warning alert-info")
-                    .addClass("alert-" + type)
-                    .html(`<i class="fas ${type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'} me-2"></i> ${text}`)
-                    .fadeIn();
-
-                setTimeout(() => {
-                    message.fadeOut();
-                }, 3000);
-            }
-
-            // Capture input changes
-            $("#guess-input").on("input", function() {
-                
-                const rawInput = $(this).val().toLowerCase();
-                const input = normalizeEnglishInput(rawInput);
-
-                // Update input content
-                guesses[currentGuess] = Array.from(input.padEnd(WORD_LENGTH, ''));
-
-                // Update display
-                const row = $(".guess-row").eq(currentGuess);
-
-                for (let i = 0; i < WORD_LENGTH; i++) {
-                    const cell = row.children().eq(i);
-                    cell.text(i < input.length ? input[i].toUpperCase() : '');
-                }
-
-                currentPosition = input.length;
+            // Wordle oyununu yapılandırma ile başlat
+            WordleGame.init({
+                word: "@Model.Word.EngWordName.ToLower()",
+                meaning: "@Model.Word.TurWordName",
+                wordLength: @Model.WordLength
             });
-
-            // Guess button click
-            $("#guess-button").click(function() {
-                if (!gameOver) {
-                    checkGuess();
-                }
-            });
-
-            // Enter key press
-            $("#guess-input").keypress(function(e) {
-                if (e.which === 13 && !gameOver) {
-                    checkGuess();
-                }
-            });
-
-            // Start game
-            createBoard();
-            $("#guess-input").focus();
         });
     </script>
 
     <style>
-        .bg-gradient {
-            background-image: linear-gradient(135deg, #6c5ce7 0%, #3c40c6 100%);
-        }
-
-        .cell {
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            transition: transform 0.5s, background-color 0.3s, color 0.3s, border-color 0.3s;
-        }
-
         #guess-input {
             text-transform: uppercase;
             letter-spacing: 2px;
