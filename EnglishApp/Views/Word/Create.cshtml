@@ -1,0 +1,93 @@
+@model EnglishApp.Models.Word
+
+@{
+    ViewData["Title"] = "Add New Word";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Add New Word</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="EngWordName" class="control-label">English Word</label>
+                            <input asp-for="EngWordName" class="form-control" />
+                            <span asp-validation-for="EngWordName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="TurWordName" class="control-label">Turkish Translation</label>
+                            <input asp-for="TurWordName" class="form-control" />
+                            <span asp-validation-for="TurWordName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Category" class="control-label">Category</label>
+                            <input asp-for="Category" class="form-control" placeholder="Kategori adını giriniz" />
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="control-label">Picture</label>
+                            <input type="file" name="picture" class="form-control" accept="image/*" />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="control-label">Audio Pronunciation</label>
+                            <input type="file" name="audio" class="form-control" accept="audio/*" />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="control-label">Example Sentences</label>
+                            <div id="samplesContainer">
+                                <div class="input-group mb-2">
+                                    <input type="text" name="samples[]" class="form-control" placeholder="Enter an example sentence" />
+                                    <button type="button" class="btn btn-outline-danger remove-sample">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary" id="addSample">
+                                <i class="fas fa-plus"></i> Add Another Example
+                            </button>
+                        </div>
+
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary">Create</button>
+                            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            $("#addSample").click(function () {
+                var sampleHtml = `
+                    <div class="input-group mb-2">
+                        <input type="text" name="samples[]" class="form-control" placeholder="Enter an example sentence" />
+                        <button type="button" class="btn btn-outline-danger remove-sample">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                $("#samplesContainer").append(sampleHtml);
+            });
+
+            $(document).on("click", ".remove-sample", function () {
+                $(this).closest(".input-group").remove();
+            });
+        });
+    </script>
+}

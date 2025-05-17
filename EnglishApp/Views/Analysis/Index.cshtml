@@ -1,0 +1,85 @@
+@model EnglishApp.Models.AnalysisViewModel
+
+@{
+    ViewData["Title"] = "Learning Analysis";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Learning Analysis Report</h3>
+                    <a href="@Url.Action("Print")" class="btn btn-primary" target="_blank">
+                        <i class="fas fa-print"></i> Print Report
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5>Total Words</h5>
+                                    <h2>@Model.TotalWords</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5>Known Words</h5>
+                                    <h2>@Model.KnownWords</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5>Overall Success Rate</h5>
+                                    <h2>@Model.OverallSuccessRate.ToString("F1")%</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3">Category Progress</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Total Words</th>
+                                    <th>Known Words</th>
+                                    <th>Success Rate</th>
+                                    <th>Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var category in Model.CategoryProgress)
+                                {
+                                    <tr>
+                                        <td>@category.Category</td>
+                                        <td>@category.TotalWords</td>
+                                        <td>@category.KnownWords</td>
+                                        <td>@category.SuccessRate.ToString("F1")%</td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar" role="progressbar" 
+                                                     style="width: @category.SuccessRate%;" 
+                                                     aria-valuenow="@category.SuccessRate" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    @category.SuccessRate.ToString("F1")%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

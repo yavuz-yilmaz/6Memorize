@@ -1,0 +1,115 @@
+@model IEnumerable<EnglishApp.Models.UserWordProgress>
+
+@{
+    ViewData["Title"] = "Learning Progress";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Learning Progress</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["Error"]
+                        </div>
+                    }
+
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-info">
+                            @TempData["Message"]
+                        </div>
+                    }
+
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 18%">Word</th>
+                                        <th style="width: 18%">Translation</th>
+                                        <th style="width: 30%">Progress</th>
+                                        <th style="width: 12%">Last Attempt</th>
+                                        <th style="width: 12%">Next Review</th>
+                                        <th style="width: 10%">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@item.Word.EngWordName</td>
+                                            <td>@item.Word.TurWordName</td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div class="progress-bar @(item.IsCompleted ? "bg-success" : "bg-primary")" 
+                                                         role="progressbar" 
+                                                         style="width: @((int)((item.CurrentStep / 6.0) * 100))%" 
+                                                         aria-valuenow="@item.CurrentStep" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="6">
+                                                        @item.CurrentStep / 6
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (item.LastAttemptDate != default)
+                                                {
+                                                    <span class="@(item.LastAttemptSuccess ? "text-success" : "text-danger")">
+                                                        @item.LastAttemptDate.ToString("g")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Not attempted</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.IsCompleted)
+                                                {
+                                                    <span class="text-success">Completed</span>
+                                                }
+                                                else
+                                                {
+                                                    @item.NextDueDate.ToString("g")
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.IsCompleted)
+                                                {
+                                                    <span class="badge bg-success">Learned</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-primary">In Progress</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    <div class="text-center mt-4">
+                        <a asp-action="Index" class="btn btn-primary">Back to Quiz</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Add any JavaScript functionality here
+        });
+    </script>
+} 

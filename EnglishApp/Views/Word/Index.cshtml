@@ -1,0 +1,164 @@
+@model IEnumerable<EnglishApp.Models.Word>
+
+@{
+    ViewData["Title"] = "Words";
+    var categories = Model.Select(w => w.Category).Distinct().OrderBy(c => c);
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Word List</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Word
+        </a>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="categoryTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all"
+                    type="button" role="tab" aria-controls="all" aria-selected="true">
+                All
+            </button>
+        </li>
+        @foreach (var category in categories)
+        {
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="@category-tab" data-bs-toggle="tab" data-bs-target="#@category.Replace(" ", "")"
+                        type="button" role="tab" aria-controls="@category" aria-selected="false">
+                    @category
+                </button>
+            </li>
+        }
+    </ul>
+
+    <div class="tab-content" id="categoryTabContent">
+        <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+            <div class="row">
+                @foreach (var item in Model)
+                {
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            @if (!string.IsNullOrEmpty(item.PicturePath))
+                            {
+                                <img src="@item.PicturePath" class="card-img-top" alt="@item.EngWordName" style="height: 200px; object-fit: cover;">
+                            }
+                            <div class="card-body">
+                                <h5 class="card-title">@item.EngWordName</h5>
+                                <p class="card-text">@item.TurWordName</p>
+                                <span class="badge bg-secondary mb-2">@item.Category</span>
+
+                                @if (item.WordSamples.Any())
+                                {
+                                    <div class="mt-3">
+                                        <h6>Example Sentences:</h6>
+                                        <ul class="list-unstyled">
+                                            @foreach (var sample in item.WordSamples)
+                                            {
+                                                <li class="mb-2">@sample.Sample</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(item.AudioPath))
+                                {
+                                    <div class="mt-3">
+                                        <audio controls class="w-100">
+                                            <source src="@item.AudioPath" type="audio/mpeg">
+                                            Your browser does not support audio element.
+                                        </audio>
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-footer">
+                                <div class="btn-group w-100">
+                                    <a asp-action="Edit" asp-route-id="@item.WordID" class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.WordID" class="btn btn-outline-danger">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @foreach (var category in categories)
+        {
+            <div class="tab-pane fade" id="@category.Replace(" ", "")" role="tabpanel" aria-labelledby="@category-tab">
+                <div class="row">
+                    @foreach (var item in Model.Where(w => w.Category == category))
+                    {
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                @if (!string.IsNullOrEmpty(item.PicturePath))
+                                {
+                                    <img src="@item.PicturePath" class="card-img-top" alt="@item.EngWordName" style="height: 200px; object-fit: cover;">
+                                }
+                                <div class="card-body">
+                                    <h5 class="card-title">@item.EngWordName</h5>
+                                    <p class="card-text">@item.TurWordName</p>
+
+                                    @if (item.WordSamples.Any())
+                                    {
+                                        <div class="mt-3">
+                                            <h6>Example Sentences:</h6>
+                                            <ul class="list-unstyled">
+                                                @foreach (var sample in item.WordSamples)
+                                                {
+                                                    <li class="mb-2">@sample.Sample</li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(item.AudioPath))
+                                    {
+                                        <div class="mt-3">
+                                            <audio controls class="w-100">
+                                                <source src="@item.AudioPath" type="audio/mpeg">
+                                                Your browser does not support audio element.
+                                            </audio>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer">
+                                    <div class="btn-group w-100">
+                                        <a asp-action="Edit" asp-route-id="@item.WordID" class="btn btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.WordID" class="btn btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Bootstrap tab functionality for category tabs
+            $('button[data-bs-toggle="tab"]').on('click', function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+
+            // If category parameter exists in URL, activate that category's tab
+            var urlParams = new URLSearchParams(window.location.search);
+            var category = urlParams.get('category');
+            if (category) {
+                $('#' + category + '-tab').tab('show');
+            }
+        });
+    </script>
+}

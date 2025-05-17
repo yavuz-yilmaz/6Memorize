@@ -1,0 +1,239 @@
+﻿@model List<int>
+
+@{
+    ViewData["Title"] = "Word Quiz";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Word Quiz</h3>
+                    <div class="progress">
+                        <div id="quizProgress" class="progress-bar" role="progressbar" style="width: 0%"
+                             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            0 / @Model.Count
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="quizContainer">
+                        <!-- Question content will be loaded here dynamically -->
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button id="submitAnswer" class="btn btn-primary">Check Answer</button>
+                        <button id="skipQuestion" class="btn btn-warning">Skip Question</button>
+                        <button id="nextQuestion" class="btn btn-success" style="display:none;">Next Question</button>
+                        <a id="showProgress" asp-action="Progress" class="btn btn-secondary">Show Progress</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Store quiz data
+            var quizWordIds = @Html.Raw(Json.Serialize(Model));
+            var currentQuestionIndex = 0;
+            var totalQuestions = quizWordIds.length;
+            var currentWordId = 0;
+            var currentWordProgressId = 0;
+
+            // Get user settings
+            var showAudio = @Json.Serialize(ViewBag.UserSettings.ShowAudio);
+            var showImages = @Json.Serialize(ViewBag.UserSettings.ShowImages);
+
+            // Hide progress button initially
+            $("#showProgress").hide();
+
+            // Load first question
+            loadQuestion(currentQuestionIndex);
+
+            // Question loading function
+            function loadQuestion(index) {
+                if (index >= totalQuestions) {
+                    // Quiz finished
+                    $("#quizContainer").html("<div class='alert alert-success'>Quiz completed! Congratulations.</div>");
+                    // Hide all buttons with CSS directly
+                    $("#submitAnswer").css('display', 'none');
+                    $("#skipQuestion").css('display', 'none');
+                    $("#nextQuestion").css('display', 'none');
+                    $("#showProgress").css('display', 'inline-block');
+                    updateProgress(totalQuestions, totalQuestions);
+                    return;
+                }
+
+                currentWordProgressId = quizWordIds[index];
+
+                // Get word info with AJAX
+                $.post("/Quiz/GetWordProcess", {id: currentWordProgressId})
+                    .done(function (response) {
+                        if (response.success) {
+                            currentWordId = response.wordId;
+
+                            // Create template
+                            var html = `
+            <div class="quiz-item mb-4" data-word-id="${response.wordId}">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">${response.engWordName}</h5>`;
+
+                            if (showImages && response.picturePath) {
+                                html += `
+                <div class="text-center mb-3">
+                    <img src="${response.picturePath}" alt="${response.engWordName}" class="img-fluid" style="max-height: 200px;" />
+                </div>`;
+                            }
+
+                            html += `
+            <div class="form-group">
+                <input type="text" id="answerInput" class="form-control answer-input" placeholder="Enter Turkish translation..."/>
+            </div>
+
+            <div class="feedback mt-2" style="display: none;">
+                <div class="alert" role="alert"></div>
+            </div>`;
+
+                            if (showAudio && response.audioPath) {
+                                html += `
+                <div class="mt-3">
+                    <audio controls class="w-100">
+                        <source src="${response.audioPath}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>`;
+                            }
+
+                            html += `
+            <div class="progress mt-3">
+                <div class="progress-bar" role="progressbar" style="width: ${Math.round((response.currentStep / 6.0) * 100)}%"
+                    aria-valuenow="${response.currentStep}" aria-valuemin="0" aria-valuemax="6">
+                    ${response.currentStep} / 6
+                </div>
+            </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+                            // Update HTML
+                            $("#quizContainer").html(html);
+                            updateProgress(index, totalQuestions);
+
+                            // Initially disable button
+                            $("#submitAnswer").prop("disabled", true);
+
+                            // Monitor input changes
+                            $("#answerInput").on("input", function () {
+                                // If input is empty, disable button, otherwise enable it
+                                if ($(this).val().trim() === "") {
+                                    $("#submitAnswer").prop("disabled", true);
+                                } else {
+                                    $("#submitAnswer").prop("disabled", false);
+                                }
+
+                                // If error message is about empty answer, hide it
+                                if ($(".feedback").is(":visible") &&
+                                    $(".feedback .alert").text() === "Please enter an answer!") {
+                                    $(".feedback").hide();
+                                }
+                            });
+
+                            // Submit answer with Enter key
+                            $("#answerInput").keypress(function (e) {
+                                if (e.which == 13) {
+                                    e.preventDefault();
+                                    // Only trigger answer submission if button is active
+                                    if (!$("#submitAnswer").prop("disabled")) {
+                                        $("#submitAnswer").click();
+                                    }
+                                }
+                            });
+
+                            // Focus on input
+                            $("#answerInput").focus();
+                        } else {
+                            $("#quizContainer").html("<div class='alert alert-danger'>An error occurred while loading the word.</div>");
+                        }
+                    })
+                    .fail(function () {
+                        $("#quizContainer").html("<div class='alert alert-danger'>Server error occurred.</div>");
+                    });
+            }
+
+            // Update progress bar
+            function updateProgress(current, total) {
+                var percentage = Math.round((current / total) * 100);
+                $("#quizProgress").css("width", percentage + "%");
+                $("#quizProgress").attr("aria-valuenow", percentage);
+                if (current == total)
+                    $("#quizProgress").text((current) + " / " + total + " Completed!");
+                else
+                    // Show current question number
+                    $("#quizProgress").text((current + 1) + " / " + total);
+            }
+
+            // Check answer
+            $("#submitAnswer").click(function () {
+                var answer = $("#answerInput").val().trim();
+
+                // Empty answer check
+                if (!answer) {
+                    $(".feedback").show().find(".alert")
+                        .removeClass("alert-success")
+                        .addClass("alert-danger")
+                        .text("Please enter an answer!");
+                    return;
+                }
+
+                var $feedback = $(".feedback");
+                var $alert = $feedback.find(".alert");
+
+                $.post("/Quiz/SubmitAnswer", {wordId: currentWordId, answer: answer})
+                    .done(function (response) {
+                        if (response.success) {
+                            $alert.removeClass("alert-danger").addClass("alert-success")
+                                .text("Correct! Congratulations!");
+                        } else {
+                            $alert.removeClass("alert-success").addClass("alert-danger")
+                                .html("Wrong. Correct answer: <strong>" + response.correctAnswer + "</strong>");
+                        }
+                        $feedback.show();
+                        $("#submitAnswer").hide();
+                        $("#skipQuestion").hide(); // Hide "Skip Question" button
+                        $("#nextQuestion").show();
+                    })
+                    .fail(function () {
+                        $alert.removeClass("alert-success").addClass("alert-danger")
+                            .text("An error occurred. Please try again.");
+                        $feedback.show();
+                    });
+            });
+
+            // Next question button click
+            $("#nextQuestion").click(function () {
+                $("#submitAnswer").show();
+                $("#skipQuestion").show(); // Show "Skip Question" button again
+                $("#nextQuestion").hide();
+                currentQuestionIndex++;
+                loadQuestion(currentQuestionIndex);
+            });
+
+            // Skip question button click
+            $("#skipQuestion").click(function () {
+                // Adjust visibility
+                $("#submitAnswer").show().prop("disabled", true);
+                $("#nextQuestion").hide();
+                
+                // Go to next question
+                currentQuestionIndex++;
+                loadQuestion(currentQuestionIndex);
+            });
+        });
+    </script>
+}

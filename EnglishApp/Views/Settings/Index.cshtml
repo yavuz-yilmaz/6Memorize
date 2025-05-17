@@ -1,0 +1,59 @@
+@model EnglishApp.Models.UserSettings
+
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">User Settings</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success">
+                            @TempData["Message"]
+                        </div>
+                    }
+
+                    <form asp-action="Update" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="UserID" />
+
+                        <div class="form-group mb-3">
+                            <label asp-for="WordsPerQuiz" class="control-label">Words per Quiz</label>
+                            <input asp-for="WordsPerQuiz" class="form-control" type="number" min="1" max="50" />
+                            <span asp-validation-for="WordsPerQuiz" class="text-danger"></span>
+                            <small class="form-text text-muted">Number of words to include in each quiz session.</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                <input asp-for="ShowAudio" class="form-check-input" />
+                                <label asp-for="ShowAudio" class="form-check-label">Show Audio Pronunciations</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                <input asp-for="ShowImages" class="form-check-input" />
+                                <label asp-for="ShowImages" class="form-check-label">Show Word Images</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary">Save Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 
