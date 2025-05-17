@@ -7,16 +7,19 @@ using EnglishApp.Models;
 using EnglishApp.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Mail;
+using EnglishApp.Services;
 
 namespace EnglishApp.Controllers
 {
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly PasswordResetService _passwordResetService;
 
-        public AccountController(ApplicationDbContext context)
+        public AccountController(ApplicationDbContext context, PasswordResetService passwordResetService)
         {
             _context = context;
+            _passwordResetService = passwordResetService;
         }
 
         [HttpGet]
@@ -118,14 +121,83 @@ namespace EnglishApp.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user != null)
             {
-                var client = new SmtpClient("sandbox.smtp.mailtrap.io", 2525)
-                {
-                    Credentials = new NetworkCredential("19ceb0696741b5", "cabf15ffbf7490"),
-                    EnableSsl = true
-                };
-                client.Send("from@example.com", email, "EnglishApp Password Reset", "You can reset your password with link:");
+                await _passwordResetService.RequestPasswordReset(email);
             }
             TempData["Message"] = "If an account exists with this email, you will receive password reset instructions.";
+            return RedirectToAction("Login");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ResetPassword(string token)
+        {
+            var passwordResetToken = await _context.PasswordResetTokens.FirstOrDefaultAsync(t => t.Token == token);
+            
+            if (passwordResetToken == null)
+            {
+                TempData["Message"] = "Password reset token does not exist.";
+                return RedirectToAction("Login");
+            }
+
+            if (passwordResetToken.ExpiryDate < DateTime.UtcNow)
+            {
+                TempData["Message"] = "Password reset token has expired.";
+                return RedirectToAction("Login");
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserID == passwordResetToken.UserId);
+            if (user == null)
+            {
+                TempData["Message"] = "User does not exist.";
+                return RedirectToAction("Login");
+            }
+            
+            return View(user);
+        }
+        
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(int userId, string token, string newPassword, string confirmPassword)
+        {
+            // Token kontrolü
+            var passwordResetToken = await _context.PasswordResetTokens.FirstOrDefaultAsync(t => t.Token == token);
+            if (passwordResetToken == null || passwordResetToken.UserId != userId || passwordResetToken.ExpiryDate < DateTime.UtcNow)
+            {
+                TempData["Message"] = "Invalid or expired password reset token.";
+                return RedirectToAction("Login");
+            }
+
+            // Şifre kontrolü
+            if (string.IsNullOrEmpty(newPassword) || newPassword.Length < 8)
+            {
+                TempData["Error"] = "Password must be at least 8 characters long.";
+                var user = await _context.Users.FindAsync(userId);
+                return View(user);
+            }
+
+            // Şifre eşleşme kontrolü
+            if (newPassword != confirmPassword)
+            {
+                TempData["Error"] = "Passwords don't match.";
+                var user = await _context.Users.FindAsync(userId);
+                return View(user);
+            }
+
+            // Kullanıcıyı bul ve şifreyi güncelle
+            var userToUpdate = await _context.Users.FindAsync(userId);
+            if (userToUpdate == null)
+            {
+                TempData["Message"] = "User not found.";
+                return RedirectToAction("Login");
+            }
+
+            // Şifreyi hashleme
+            userToUpdate.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+    
+            // Token sil
+            _context.PasswordResetTokens.Remove(passwordResetToken);
+    
+            await _context.SaveChangesAsync();
+    
+            TempData["Message"] = "Your password has been reset successfully. You can now login with your new password.";
             return RedirectToAction("Login");
         }
     }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EnglishApp.Data;
+using EnglishApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,9 @@ builder.Services.AddControllersWithViews();
 // Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<PasswordResetService>();
 
 // Add Authentication
 builder.Services.AddAuthentication("Cookies")

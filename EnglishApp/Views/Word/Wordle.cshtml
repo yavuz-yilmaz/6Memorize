@@ -1,41 +1,69 @@
 @model EnglishApp.Models.WordleViewModel
 @{
-    ViewData["Title"] = "Wordle Oyunu";
+    ViewData["Title"] = "Wordle Game";
 }
 
 <div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Wordle Oyunu</h3>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-gradient text-black d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0"><i class="fas fa-puzzle-piece me-2"></i>Wordle Game</h3>
                 </div>
-                <div class="card-body">
-                    <p class="lead">Öğrendiğiniz İngilizce kelime için Wordle oyunu oynayın. Doğru harfleri bulmaya çalışın!</p>
-                    <p><strong>İpucu:</strong> İngilizce <strong>@Model.WordLength</strong> harfli bir kelime bulmanız gerekiyor.</p>
 
-                    <div id="wordle-container">
-                        <!-- Oyun tahtası burada oluşturulacak -->
-                        <div id="board-container" class="mb-4"></div>
+                <div class="card-body p-4">
+                    <p class="lead text-center">Find the English word you've learned!</p>
+                    <div class="text-center mb-4">
+                        <span class="badge bg-info text-white p-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Guess the <strong>@Model.WordLength</strong>-letter word
+                        </span>
+                    </div>
 
-                        <div class="input-group mb-3">
-                            <input type="text" id="guess-input" class="form-control" maxlength="@Model.WordLength" placeholder="Tahmin edin...">
-                            <button class="btn btn-primary" id="guess-button">Tahmin Et</button>
+                    <div id="wordle-container" class="mb-4">
+                        <!-- Game board will be created here -->
+                        <div id="board-container" class="d-flex flex-column align-items-center"></div>
+
+                        <div class="input-group mt-4">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-keyboard text-primary"></i>
+                            </span>
+                            <input type="text" id="guess-input" class="form-control form-control-lg"
+                                   maxlength="@Model.WordLength" placeholder="Type your guess...">
+                            <button class="btn btn-primary" id="guess-button">
+                                <i class="fas fa-check me-1"></i> Guess
+                            </button>
                         </div>
 
                         <div class="mt-3">
                             <div id="message" class="alert" style="display: none;"></div>
-                            <div id="keyboard" class="mt-3"></div>
                         </div>
 
                         <div class="mt-4 text-center" id="result-container" style="display: none;">
                             <div class="alert alert-success">
                                 <h4 id="result-message"></h4>
-                                <p id="word-meaning"></p>
+                                <p id="word-meaning" class="mb-0 mt-2 fs-5"></p>
                             </div>
-                            <button class="btn btn-success" id="new-game">Yeni Oyun</button>
-                            <a asp-controller="Word" asp-action="Wordle" class="btn btn-primary">Başka Kelime</a>
+                            <div class="mt-3">
+                                <a asp-controller="Word" asp-action="Wordle" class="btn btn-success ms-2">
+                                    <i class="fas fa-sync me-1"></i> New Game
+                                </a>
+                                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary ms-2">
+                                    <i class="fas fa-home me-1"></i> Home
+                                </a>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">
+                            <i class="fas fa-graduation-cap me-1"></i> Selected from words you've learned
+                        </span>
+                        <span class="badge bg-primary">
+                            <i class="fas fa-tag me-1"></i> @Model.Word.Category
+                        </span>
                     </div>
                 </div>
             </div>
@@ -46,223 +74,186 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Kelimeyi gizli bir şekilde sakla
+            // Hide the word securely
             const word = "@Model.Word.EngWordName.ToLower()";
             const meaning = "@Model.Word.TurWordName";
 
-            // Oyun değişkenleri
+            // Game variables
             const WORD_LENGTH = @Model.WordLength;
             const MAX_GUESSES = 6;
             let currentGuess = 0;
             let currentPosition = 0;
             let guesses = Array(MAX_GUESSES).fill().map(() => Array(WORD_LENGTH).fill(''));
             let gameOver = false;
-            
-            // Oyun tahtasını oluştur
+
+            // Create the game board
             function createBoard() {
                 const boardContainer = $("#board-container");
                 boardContainer.empty();
-                
+
                 for (let i = 0; i < MAX_GUESSES; i++) {
                     const row = $("<div>").addClass("guess-row d-flex mb-2");
-                    
+
                     for (let j = 0; j < WORD_LENGTH; j++) {
                         const cell = $("<div>").addClass("cell border d-flex justify-content-center align-items-center mx-1")
                             .css({
                                 "width": "50px",
                                 "height": "50px",
                                 "font-size": "24px",
-                                "font-weight": "bold"
+                                "font-weight": "bold",
+                                "border-radius": "8px",
+                                "transition": "all 0.3s ease"
                             });
                         row.append(cell);
                     }
-                    
+
                     boardContainer.append(row);
                 }
-            }
-            
-            // Klavyeyi oluştur
-            function createKeyboard() {
-                const keyboard = $("#keyboard");
-                keyboard.empty();
-                
-                const rows = [
-                    "qwertyuiop",
-                    "asdfghjkl",
-                    "zxcvbnm"
-                ];
-                
-                rows.forEach(row => {
-                    const keyRow = $("<div>").addClass("d-flex justify-content-center mb-2");
-                    
-                    if (row === "zxcvbnm") {
-                        keyRow.append($("<div>").addClass("key-spacer").css("width", "15px"));
-                    }
-                    
-                    for (let i = 0; i < row.length; i++) {
-                        const key = $("<div>").addClass("key btn btn-light border mx-1")
-                            .text(row[i].toUpperCase())
-                            .css({
-                                "width": "40px",
-                                "height": "50px",
-                                "font-weight": "bold",
-                                "cursor": "pointer"
-                            })
-                            .attr("data-key", row[i]);
-                        
-                        keyRow.append(key);
-                    }
-                    
-                    if (row === "zxcvbnm") {
-                        keyRow.append($("<div>").addClass("key-spacer").css("width", "15px"));
-                    }
-                    
-                    keyboard.append(keyRow);
-                });
-                
-                // Klavye tuşlarına tıklama olayı ekle
-                $(".key").click(function() {
-                    if (gameOver) return;
-                    
-                    const key = $(this).attr("data-key");
-                    const input = $("#guess-input");
-                    
-                    if (input.val().length < WORD_LENGTH) {
-                        input.val(input.val() + key).trigger("input");
-                    }
-                });
+
+                // Highlight the first row as active
+                $(".guess-row").first().find(".cell").addClass("border-primary");
+                $("#attempts-counter").text(`1/${MAX_GUESSES}`);
             }
 
-            // Tahmini kontrol et
+            function normalizeEnglishInput(text) {
+                // Türkçe karakterleri İngilizce eşdeğerlerine dönüştürme
+                const charMap = {
+                    'ı': 'i', 'ğ': 'g', 'ü': 'u', 'ş': 's', 'ö': 'o', 'ç': 'c',
+                    'İ': 'I', 'Ğ': 'G', 'Ü': 'U', 'Ş': 'S', 'Ö': 'O', 'Ç': 'C'
+                };
+
+                return text.split('').map(char => charMap[char] || char).join('');
+            }
+
+            // Check the guess
             function checkGuess() {
                 const input = $("#guess-input");
-                const guess = input.val().toLowerCase();
+                const rawGuess = input.val().toLowerCase();
 
+                const guess = normalizeEnglishInput(rawGuess);
                 if (guess.length !== WORD_LENGTH) {
-                    showMessage("Lütfen " + WORD_LENGTH + " harfli bir kelime girin!", "warning");
+                    showMessage(`Please enter a ${WORD_LENGTH}-letter word!`, "warning");
                     return;
                 }
 
-                // Harfleri kontrol et ve renkleri güncelle
+                // Check letters and update colors
                 const row = $(".guess-row").eq(currentGuess);
                 const letterCount = {};
 
-                // Kelimede her harften kaç tane var say
+                // Count how many of each letter are in the word
                 for (let i = 0; i < word.length; i++) {
                     letterCount[word[i]] = (letterCount[word[i]] || 0) + 1;
                 }
 
-                // Önce tam eşleşmeleri kontrol et ve letterCount'tan düş
+                // First check for exact matches and subtract from letterCount
                 for (let i = 0; i < WORD_LENGTH; i++) {
                     if (guess[i] === word[i]) {
                         letterCount[guess[i]]--;
                     }
                 }
 
-                // Şimdi tüm harfleri kontrol et ve renkleri güncelle
+                // Now check all letters and update colors with animation
                 for (let i = 0; i < WORD_LENGTH; i++) {
                     const cell = row.children().eq(i);
                     const letter = guess[i];
 
-                    if (letter === word[i]) {
-                        // Tam eşleşme - yeşil
-                        cell.css("background-color", "#198754").css("color", "white");
-                        updateKeyboardColor(letter, "#198754"); // Yeşil
-                    } else if (word.includes(letter) && letterCount[letter] > 0) {
-                        // Kelimede var ama yanlış konumda - sarı
-                        cell.css("background-color", "#ffc107").css("color", "black");
-                        updateKeyboardColor(letter, "#ffc107"); // Sarı
-                        letterCount[letter]--; // Bu harfi kullandık, sayıyı düş
-                    } else {
-                        // Kelimede yok veya tüm oluşumları kullanılmış - gri
-                        cell.css("background-color", "#6c757d").css("color", "white");
-                        updateKeyboardColor(letter, "#6c757d"); // Gri
-                    }
+                    // Flip animation
+                    setTimeout(() => {
+                        cell.css("transform", "rotateX(90deg)");
+
+                        setTimeout(() => {
+                            if (letter === word[i]) {
+                                // Exact match - green
+                                cell.css("background-color", "#198754").css("color", "white")
+                                    .css("border-color", "#198754");
+                            } else if (word.includes(letter) && letterCount[letter] > 0) {
+                                // In word but wrong position - yellow
+                                cell.css("background-color", "#ffc107").css("color", "black")
+                                    .css("border-color", "#ffc107");
+                                letterCount[letter]--; // Decrease the count for this letter
+                            } else {
+                                // Not in word or all occurrences used - gray
+                                cell.css("background-color", "#6c757d").css("color", "white")
+                                    .css("border-color", "#6c757d");
+                            }
+
+                            // Flip back
+                            cell.css("transform", "rotateX(0deg)");
+                        }, 250);
+                    }, i * 200);
                 }
 
-                // Input kutusu temizle
+                // Clear input box
                 input.val("");
 
-                // Sonuçları kontrol et
+                // Check results
                 if (guess === word) {
-                    gameOver = true;
-                    showResult(true);
+                    setTimeout(() => {
+                        gameOver = true;
+                        showResult(true);
+                    }, WORD_LENGTH * 200 + 300);
                 } else {
                     currentGuess++;
-                    currentPosition = 0;
 
                     if (currentGuess >= MAX_GUESSES) {
-                        gameOver = true;
-                        showResult(false);
+                        setTimeout(() => {
+                            gameOver = true;
+                            showResult(false);
+                        }, WORD_LENGTH * 200 + 300);
                     } else {
-                        showMessage("Devam et!", "info");
+                        // Update active row
+                        setTimeout(() => {
+                            $(".guess-row").removeClass("active").find(".cell").removeClass("border-primary");
+                            $(".guess-row").eq(currentGuess).addClass("active").find(".cell").addClass("border-primary");
+                            $("#attempts-counter").text(`${currentGuess + 1}/${MAX_GUESSES}`);
+                        }, WORD_LENGTH * 200 + 300);
                     }
                 }
             }
-            
-            // Klavye tuşunun rengini güncelle
-            function updateKeyboardColor(key, color) {
-                const keyElement = $(`[data-key='${key}']`);
-                
-                // Eğer tuş zaten yeşil ise rengini değiştirme
-                if (keyElement.css("background-color") === "rgb(25, 135, 84)") {
-                    return;
-                }
-                
-                // Eğer tuş sarı ise ve yeni renk gri ise değiştirme
-                if (keyElement.css("background-color") === "rgb(255, 193, 7)" && color === "#6c757d") {
-                    return;
-                }
-                
-                keyElement.css("background-color", color);
-                
-                if (color === "#6c757d" || color === "#198754") {
-                    keyElement.css("color", "white");
-                } else {
-                    keyElement.css("color", "black");
-                }
-            }
 
-            // Sonucu göster
+            // Show results
             function showResult(win) {
                 const resultContainer = $("#result-container");
                 const resultMessage = $("#result-message");
                 const wordMeaning = $("#word-meaning");
 
                 if (win) {
-                    resultMessage.text("Tebrikler! Kelimeyi buldunuz.");
+                    resultMessage.html('<i class="fas fa-trophy text-warning me-2"></i> Congratulations! You found the word.');
                 } else {
-                    resultMessage.text("Üzgünüm, doğru kelimeyi bulamadınız. Doğru yanıt: " + word.toUpperCase());
+                    resultMessage.html('<i class="fas fa-times-circle text-danger me-2"></i> Sorry, you didn\'t find the correct word.');
+                    resultMessage.append(`<div class="mt-2">Correct answer: <strong>${word.toUpperCase()}</strong></div>`);
                 }
 
-                wordMeaning.text("Kelimenin anlamı: " + meaning);
-                resultContainer.show();
+                wordMeaning.html(`<i class="fas fa-language me-2"></i> Word meaning: <strong>${meaning}</strong>`);
+                resultContainer.fadeIn();
 
-                // Message'ı gizle
+                // Hide message
                 $("#message").hide();
             }
 
-            // Mesaj göster
+            // Show message
             function showMessage(text, type) {
                 const message = $("#message");
                 message.removeClass("alert-success alert-danger alert-warning alert-info")
                     .addClass("alert-" + type)
-                    .text(text)
-                    .show();
+                    .html(`<i class="fas ${type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'} me-2"></i> ${text}`)
+                    .fadeIn();
 
                 setTimeout(() => {
-                    message.hide();
+                    message.fadeOut();
                 }, 3000);
             }
 
-            // Input değişikliklerini yakala
+            // Capture input changes
             $("#guess-input").on("input", function() {
-                const input = $(this).val().toLowerCase();
+                
+                const rawInput = $(this).val().toLowerCase();
+                const input = normalizeEnglishInput(rawInput);
 
-                // Input içeriğini güncelle
+                // Update input content
                 guesses[currentGuess] = Array.from(input.padEnd(WORD_LENGTH, ''));
 
-                // Görünümü güncelle
+                // Update display
                 const row = $(".guess-row").eq(currentGuess);
 
                 for (let i = 0; i < WORD_LENGTH; i++) {
@@ -273,43 +264,59 @@
                 currentPosition = input.length;
             });
 
-            // Tahmin butonuna tıklanınca
+            // Guess button click
             $("#guess-button").click(function() {
                 if (!gameOver) {
                     checkGuess();
                 }
             });
 
-            // Enter tuşuna basılınca
+            // Enter key press
             $("#guess-input").keypress(function(e) {
                 if (e.which === 13 && !gameOver) {
                     checkGuess();
                 }
             });
 
-            // Yeni oyun butonuna tıklanınca
-            $("#new-game").click(function() {
-                resetGame();
-            });
-
-            // Oyunu sıfırla
-            function resetGame() {
-                currentGuess = 0;
-                currentPosition = 0;
-                guesses = Array(MAX_GUESSES).fill().map(() => Array(WORD_LENGTH).fill(''));
-                gameOver = false;
-
-                createBoard();
-                createKeyboard();
-
-                $("#guess-input").val('');
-                $("#result-container").hide();
-                $("#message").hide();
-            }
-
-            // Oyunu başlat
+            // Start game
             createBoard();
-            createKeyboard();
+            $("#guess-input").focus();
         });
     </script>
+
+    <style>
+        .bg-gradient {
+            background-image: linear-gradient(135deg, #6c5ce7 0%, #3c40c6 100%);
+        }
+
+        .cell {
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.5s, background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        #guess-input {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .alert {
+            border-radius: 8px;
+        }
+
+        #result-container {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        #board-container {
+            min-height: 360px;
+        }
+
+        #guess-button {
+            transition: all 0.2s ease;
+        }
+
+        #guess-button:hover {
+            transform: translateY(-2px);
+        }
+    </style>
 }

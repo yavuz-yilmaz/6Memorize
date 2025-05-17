@@ -303,5 +303,44 @@ namespace EnglishApp.Controllers
                 System.IO.File.Delete(fullPath);
             }
         }
+        
+        // GET: Word/Wordle
+        public async Task<IActionResult> Wordle()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = int.Parse(userIdClaim.Value);
+
+            // Kullanıcının ilerleme kaydettiği (en az bir kez doğru cevapladığı) kelimeleri getir
+            var learnedWords = await _context.UserWordProgresses
+                .Include(uwp => uwp.Word)
+                .Where(uwp => uwp.UserID == userId && uwp.CurrentStep > 0)
+                .Select(uwp => uwp.Word)
+                .ToListAsync();
+
+            // Eğer öğrenilen kelime yoksa uyarı mesajı göster
+            if (learnedWords == null || !learnedWords.Any())
+            {
+                TempData["Warning"] = "Henüz öğrendiğiniz kelime bulunmuyor. Önce quiz bölümünden kelimeler öğrenin.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Öğrenilen kelimelerden rastgele birini seç
+            var random = new Random();
+            var selectedWord = learnedWords[random.Next(learnedWords.Count)];
+
+            // WordleViewModel oluştur
+            var viewModel = new WordleViewModel
+            {
+                Word = selectedWord,
+                WordLength = selectedWord.EngWordName.Length
+            };
+
+            return View(viewModel);
+        }
     }
 }

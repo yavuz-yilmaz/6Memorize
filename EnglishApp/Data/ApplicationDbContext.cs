@@ -17,7 +17,7 @@ namespace EnglishApp.Data
         public DbSet<UserSettings> UserSettings { get; set; }
         public DbSet<WordPuzzle> WordPuzzles { get; set; }
         public DbSet<WordChainStory> WordChainStories { get; set; }
-
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
