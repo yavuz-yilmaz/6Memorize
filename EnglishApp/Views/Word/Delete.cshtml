@@ -4,53 +4,135 @@
     ViewData["Title"] = "Delete Word";
 }
 
-<div class="container mt-4">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="text-center">Delete Word</h3>
+        <div class="col-lg-9">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-danger text-white text-center py-3">
+                    <h3 class="mb-0"><i class="fas fa-trash-alt me-2"></i>Delete Word</h3>
                 </div>
-                <div class="card-body">
-                    <div class="alert alert-danger">
-                        <h4>Are you sure you want to delete this word?</h4>
-                        <p>This action cannot be undone.</p>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning border-0 d-flex align-items-center mb-4">
+                        <i class="fas fa-exclamation-triangle fa-2x me-3 text-danger"></i>
+                        <div>
+                            <h5 class="alert-heading">Are you sure you want to delete this word?</h5>
+                            <p class="mb-0">This action cannot be undone. All associated data, including progress records, will be permanently removed.</p>
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <h5>@Model.EngWordName</h5>
-                        <p>@Model.TurWordName</p>
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-light d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>
+                            <h5 class="mb-0">Word Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small">English Word</label>
+                                        <h4 class="fw-bold text-primary mb-0">@Model.EngWordName</h4>
+                                    </div>
 
-                        @if (!string.IsNullOrEmpty(Model.PicturePath))
-                        {
-                            <div class="mt-3">
-                                <img src="@Model.PicturePath" alt="@Model.EngWordName" class="img-thumbnail" style="max-height: 200px;" />
-                            </div>
-                        }
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small">Turkish Translation</label>
+                                        <h4 class="fw-bold mb-0">@Model.TurWordName</h4>
+                                    </div>
 
-                        @if (Model.WordSamples.Any())
-                        {
-                            <div class="mt-3">
-                                <h6>Example Sentences:</h6>
-                                <ul class="list-unstyled">
-                                    @foreach (var sample in Model.WordSamples)
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="badge bg-light text-secondary border px-3 py-2">
+                                            <i class="fas fa-tag me-1"></i> @(string.IsNullOrEmpty(Model.Category) ? "General" : Model.Category)
+                                        </span>
+
+                                        <span class="ms-2 badge bg-light text-secondary border px-3 py-2">
+                                            <i class="fas fa-calendar-alt me-1"></i>
+                                            Added @Model.CreatedAt.ToString("MMM dd, yyyy")
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    @if (!string.IsNullOrEmpty(Model.PicturePath))
                                     {
-                                        <li class="mb-2">@sample.Sample</li>
+                                        <div class="word-image rounded overflow-hidden d-flex align-items-center justify-content-center bg-light mb-3">
+                                            <img src="@Model.PicturePath" alt="@Model.EngWordName" class="img-fit" />
+                                        </div>
                                     }
-                                </ul>
+
+                                    @if (!string.IsNullOrEmpty(Model.AudioPath))
+                                    {
+                                        <div class="audio-player mb-3">
+                                            <audio controls class="w-100">
+                                                <source src="@Model.AudioPath" type="audio/mpeg">
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                        </div>
+                                    }
+                                </div>
                             </div>
-                        }
+
+                            @if (Model.WordSamples.Any())
+                            {
+                                <div class="mt-2">
+                                    <label class="form-label text-muted small">Example Sentences</label>
+                                    <div class="list-group">
+                                        @foreach (var sample in Model.WordSamples)
+                                        {
+                                            <div class="list-group-item border-0 bg-light mb-2 rounded p-3">
+                                                <i class="fas fa-quote-left me-2 text-muted"></i>
+                                                @sample.Sample
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
                     </div>
 
                     <form asp-action="Delete" method="post">
                         <input type="hidden" asp-for="WordID" />
-                        <div class="form-group text-center">
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                        <div class="d-flex justify-content-center gap-3 mt-4">
+                            <button type="submit" class="btn btn-danger btn-lg px-4">
+                                <i class="fas fa-trash-alt me-2"></i>Delete Permanently
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+@section Styles {
+    <style>
+        .word-image {
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .img-fit {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .list-group-item {
+            transition: all 0.2s;
+            border-left: 4px solid #3498db;
+        }
+
+        .btn {
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+}

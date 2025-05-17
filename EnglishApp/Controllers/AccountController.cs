@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -5,6 +6,7 @@ using System.Security.Claims;
 using EnglishApp.Models;
 using EnglishApp.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mail;
 
 namespace EnglishApp.Controllers
 {
@@ -116,16 +118,14 @@ namespace EnglishApp.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user != null)
             {
-                // In a real application, send password reset email
-                // For now, just show a success message
-                TempData["Message"] = "If an account exists with this email, you will receive password reset instructions.";
+                var client = new SmtpClient("sandbox.smtp.mailtrap.io", 2525)
+                {
+                    Credentials = new NetworkCredential("19ceb0696741b5", "cabf15ffbf7490"),
+                    EnableSsl = true
+                };
+                client.Send("from@example.com", email, "EnglishApp Password Reset", "You can reset your password with link:");
             }
-            else
-            {
-                // Don't reveal that the email doesn't exist
-                TempData["Message"] = "If an account exists with this email, you will receive password reset instructions.";
-            }
-
+            TempData["Message"] = "If an account exists with this email, you will receive password reset instructions.";
             return RedirectToAction("Login");
         }
     }

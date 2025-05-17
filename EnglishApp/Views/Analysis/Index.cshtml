@@ -1,85 +1,320 @@
 @model EnglishApp.Models.AnalysisViewModel
 
 @{
-    ViewData["Title"] = "Learning Analysis";
+    ViewData["Title"] = "Learning Analytics";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0">Learning Analysis Report</h3>
-                    <a href="@Url.Action("Print")" class="btn btn-primary" target="_blank">
-                        <i class="fas fa-print"></i> Print Report
-                    </a>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <div class="card bg-light">
-                                <div class="card-body text-center">
-                                    <h5>Total Words</h5>
-                                    <h2>@Model.TotalWords</h2>
-                                </div>
-                            </div>
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-0">
+                    <div class="bg-primary bg-gradient text-white p-4 rounded-top d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1"><i class="fas fa-chart-bar me-2"></i>Learning Analytics</h2>
+                            <p class="mb-0 opacity-75">Track your vocabulary learning progress</p>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card bg-light">
-                                <div class="card-body text-center">
-                                    <h5>Known Words</h5>
-                                    <h2>@Model.KnownWords</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card bg-light">
-                                <div class="card-body text-center">
-                                    <h5>Overall Success Rate</h5>
-                                    <h2>@Model.OverallSuccessRate.ToString("F1")%</h2>
-                                </div>
-                            </div>
+                        <div class="d-flex">
+                            <a asp-action="Print" class="btn btn-outline-light" target="_blank">
+                                <i class="fas fa-print me-2"></i>Print Report
+                            </a>
                         </div>
                     </div>
 
-                    <h4 class="mb-3">Category Progress</h4>
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Category</th>
-                                    <th>Total Words</th>
-                                    <th>Known Words</th>
-                                    <th>Success Rate</th>
-                                    <th>Progress</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var category in Model.CategoryProgress)
-                                {
-                                    <tr>
-                                        <td>@category.Category</td>
-                                        <td>@category.TotalWords</td>
-                                        <td>@category.KnownWords</td>
-                                        <td>@category.SuccessRate.ToString("F1")%</td>
-                                        <td>
-                                            <div class="progress">
-                                                <div class="progress-bar" role="progressbar" 
-                                                     style="width: @category.SuccessRate%;" 
-                                                     aria-valuenow="@category.SuccessRate" 
-                                                     aria-valuemin="0" 
-                                                     aria-valuemax="100">
-                                                    @category.SuccessRate.ToString("F1")%
-                                                </div>
+                    <div class="p-4">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-light h-100">
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                                <h6 class="text-muted mb-1">Total Words</h6>
+                                                <h3 class="mb-0">@Model.TotalWords</h3>
                                             </div>
-                                        </td>
-                                    </tr>
+                                            <div class="icon-circle bg-primary">
+                                                <i class="fas fa-book text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div class="mt-auto">
+                                            <a asp-controller="Word" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-list me-1"></i>View All Words
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-light h-100">
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                                <h6 class="text-muted mb-1">Mastered Words</h6>
+                                                <h3 class="mb-0">@Model.KnownWords</h3>
+                                            </div>
+                                            <div class="icon-circle bg-success">
+                                                <i class="fas fa-check text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div class="mt-auto">
+                                            <a asp-controller="Quiz" asp-action="Progress" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-tasks me-1"></i>View Progress
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-light h-100">
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                                <h6 class="text-muted mb-1">Success Rate</h6>
+                                                <h3 class="mb-0">@Model.OverallSuccessRate.ToString("F1")%</h3>
+                                            </div>
+                                            <div class="icon-circle bg-warning">
+                                                <i class="fas fa-percentage text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div class="mt-auto">
+                                            <div class="progress" style="height: 10px">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width: @Model.OverallSuccessRate%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="fas fa-trophy me-2 text-warning"></i>Your Achievement</h5>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#shareModal">
+                                        <i class="fas fa-share-alt me-1"></i>Share
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row align-items-center">
+                                    <div class="col-md-5">
+                                        <div class="achievement-circle mx-auto">
+                                            <div class="achievement-inner">
+                                                <h2 class="mb-0">@Model.OverallSuccessRate.ToString("F0")%</h2>
+                                                <p class="mb-0">Mastered</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <h4 class="mb-3">Learning Progress</h4>
+                                        <p class="text-muted mb-3">
+                                            You've mastered @Model.KnownWords out of @Model.TotalWords vocabulary words in our database.
+                                        </p>
+                                        <p class="mb-3">
+                                            Continue with your daily learning to improve your vocabulary by another @((100 - Model.OverallSuccessRate).ToString("F0"))%.
+                                        </p>
+                                        <div class="d-grid gap-2 d-md-flex">
+                                            <a asp-controller="Quiz" asp-action="Index" class="btn btn-primary">
+                                                <i class="fas fa-play me-2"></i>Continue Learning
+                                            </a>
+                                            <a asp-controller="Word" asp-action="Create" class="btn btn-outline-secondary">
+                                                <i class="fas fa-plus me-2"></i>Add New Words
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="fas fa-tags me-2 text-primary"></i>Category Progress</h5>
+                            </div>
+                            <div class="card-body">
+                                @if (Model.CategoryProgress.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table align-middle">
+                                            <thead class="bg-light">
+                                            <tr>
+                                                <th>Category</th>
+                                                <th class="text-center">Words</th>
+                                                <th class="text-center">Mastered</th>
+                                                <th class="text-center">Success Rate</th>
+                                                <th>Progress</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @foreach (var category in Model.CategoryProgress.OrderByDescending(c => c.SuccessRate))
+                                            {
+                                                var progressColor = "bg-danger";
+                                                if (category.SuccessRate >= 75) progressColor = "bg-success";
+                                                else if (category.SuccessRate >= 50) progressColor = "bg-info";
+                                                else if (category.SuccessRate >= 25) progressColor = "bg-warning";
+
+                                                <tr>
+                                                    <td>
+                                                            <span class="badge bg-light text-dark border px-3 py-2">
+                                                                @(string.IsNullOrEmpty(category.Category) ? "General" : category.Category)
+                                                            </span>
+                                                    </td>
+                                                    <td class="text-center">@category.TotalWords</td>
+                                                    <td class="text-center">@category.KnownWords</td>
+                                                    <td class="text-center">@category.SuccessRate.ToString("F1")%</td>
+                                                    <td width="35%">
+                                                        <div class="progress" style="height: 10px;">
+                                                            <div class="progress-bar @progressColor" role="progressbar" style="width: @category.SuccessRate%"></div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 }
-                            </tbody>
-                        </table>
+                                else
+                                {
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-tag fa-3x text-muted mb-3"></i>
+                                        <h5>No category data available</h5>
+                                        <p class="text-muted mb-3">Start learning words to see category analysis</p>
+                                        <a asp-controller="Quiz" asp-action="Index" class="btn btn-primary">
+                                            <i class="fas fa-play me-2"></i>Start Learning
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share Your Progress</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Share your learning achievement with friends!</p>
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="achievement-circle-sm">
+                        <div class="achievement-inner-sm">
+                            <h3 class="mb-0">@Model.OverallSuccessRate.ToString("F0")%</h3>
+                            <p class="mb-0 small">Mastered</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" value="I've mastered @Model.KnownWords vocabulary words on EnglishApp!" id="shareText" readonly>
+                    <button class="btn btn-outline-primary" type="button" id="copyBtn">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="#" class="btn btn-sm btn-primary"><i class="fab fa-facebook me-1"></i> Share</a>
+                    <a href="#" class="btn btn-sm btn-info text-white"><i class="fab fa-twitter me-1"></i> Tweet</a>
+                    <a href="#" class="btn btn-sm btn-success"><i class="fab fa-whatsapp me-1"></i> Send</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Copy share text
+            $("#copyBtn").click(function() {
+                var copyText = document.getElementById("shareText");
+                copyText.select();
+                copyText.setSelectionRange(0, 99999);
+                navigator.clipboard.writeText(copyText.value);
+
+                var originalHtml = $(this).html();
+                $(this).html('<i class="fas fa-check"></i>');
+                setTimeout(function() {
+                    $("#copyBtn").html(originalHtml);
+                }, 2000);
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-circle i {
+            font-size: 1.25rem;
+        }
+
+        .achievement-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(#4e73df @(Model.OverallSuccessRate)%, #e9ecef @(Model.OverallSuccessRate)%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .achievement-inner {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .achievement-circle-sm {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: conic-gradient(#4e73df @(Model.OverallSuccessRate)%, #e9ecef @(Model.OverallSuccessRate)%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .achievement-inner-sm {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .table thead th {
+            border-top: none;
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .progress {
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #e9ecef;
+        }
+    </style>
+}

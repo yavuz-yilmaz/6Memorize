@@ -2,7 +2,185 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .hero-section {
+        background-color: #056bb3;
+        color: white;
+        padding: 60px 0;
+        border-radius: 10px;
+        margin-bottom: 40px;
+    }
+
+    .feature-card {
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.3s, box-shadow 0.3s;
+        margin-bottom: 25px;
+        height: 100%;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .feature-icon {
+        font-size: 40px;
+        margin-bottom: 15px;
+        color: #3498db;
+    }
+
+    .feature-card.green .feature-icon {
+        color: #2ecc71;
+    }
+
+    .feature-card.orange .feature-icon {
+        color: #f39c12;
+    }
+
+    .feature-card.blue .feature-icon {
+        color: #3498db;
+    }
+
+    .cta-section {
+        background-color: #f8f9fa;
+        padding: 40px;
+        border-radius: 10px;
+        margin-top: 20px;
+        border-left: 5px solid #f39c12;
+    }
+
+    .dashboard-image {
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        max-width: 100%;
+    }
+</style>
+
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 class="display-4 fw-bold">Learn English the Smart Way</h1>
+                <p class="lead">Improve your English with our vocabulary learning app, track your progress and expand your vocabulary.</p>
+
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <div class="mt-4">
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg me-2">Sign Up Free</a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg">Login</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="mt-4">
+                        <a asp-controller="Quiz" asp-action="Index" class="btn btn-light btn-lg me-2">Start Quiz</a>
+                        <a asp-controller="Word" asp-action="Index" class="btn btn-outline-light btn-lg">My Words</a>
+                    </div>
+                }
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <img src="/images/heroImage.webp" alt="English Learning" class="img-fluid" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h2 class="text-center mb-5">Our Features</h2>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card feature-card blue">
+                <div class="card-body text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h4 class="card-title">Personal Vocabulary List</h4>
+                    <p class="card-text">Create your own word list, add images and audio, organize them into categories.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card feature-card green">
+                <div class="card-body text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h4 class="card-title">Smart Quiz System</h4>
+                    <p class="card-text">Learn and remember words more effectively with spaced repetition technique.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card feature-card orange">
+                <div class="card-body text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4 class="card-title">Progress Analysis</h4>
+                    <p class="card-text">Track your learning process, view your development with graphs and reports.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card feature-card orange">
+                <div class="card-body text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h4 class="card-title">Fun Games</h4>
+                    <p class="card-text">Make vocabulary learning fun with our Wordle game.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card feature-card blue">
+                <div class="card-body text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <h4 class="card-title">Customizable</h4>
+                    <p class="card-text">Change and customize settings according to your learning preferences.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card feature-card green">
+                <div class="card-body text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-print"></i>
+                    </div>
+                    <h4 class="card-title">Reports</h4>
+                    <p class="card-text">Print or digitally save reports showing your progress.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cta-section">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3>Start Now</h3>
+                <p class="mb-md-0">Begin your English vocabulary learning journey today and track your progress.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg">Sign Up Free</a>
+                }
+                else
+                {
+                    <a asp-controller="Quiz" asp-action="Index" class="btn btn-primary btn-lg">Start Quiz</a>
+                }
+            </div>
+        </div>
+    </div>
 </div>

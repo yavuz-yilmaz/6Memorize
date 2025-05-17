@@ -4,48 +4,64 @@
     ViewData["Title"] = "Settings";
 }
 
-<div class="container mt-4">
+<div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="text-center">User Settings</h3>
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-cog me-2"></i>Settings</h3>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     @if (TempData["Message"] != null)
                     {
-                        <div class="alert alert-success">
-                            @TempData["Message"]
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i> @TempData["Message"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     }
 
                     <form asp-action="Update" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        <input type="hidden" asp-for="UserID" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                        <div class="form-group mb-3">
-                            <label asp-for="WordsPerQuiz" class="control-label">Words per Quiz</label>
-                            <input asp-for="WordsPerQuiz" class="form-control" type="number" min="1" max="50" />
-                            <span asp-validation-for="WordsPerQuiz" class="text-danger"></span>
-                            <small class="form-text text-muted">Number of words to include in each quiz session.</small>
-                        </div>
+                        <div class="mb-4">
+                            <h5><i class="fas fa-sliders-h me-2"></i>Quiz Settings</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label asp-for="WordsPerQuiz" class="form-label">Words per quiz</label>
+                                        <div class="input-group">
+                                            <input asp-for="WordsPerQuiz" type="range" class="form-range" min="1" max="50" id="wordsPerQuiz" oninput="updateValue(this.value)" />
+                                            <input asp-for="WordsPerQuiz" type="number" class="form-control w-25" min="1" max="50" id="wordsPerQuizNumber" oninput="updateSlider(this.value)" />
+                                        </div>
+                                        <div class="form-text">Number of words to be tested in each quiz session</div>
+                                    </div>
 
-                        <div class="form-group mb-3">
-                            <div class="form-check">
-                                <input asp-for="ShowAudio" class="form-check-input" />
-                                <label asp-for="ShowAudio" class="form-check-label">Show Audio Pronunciations</label>
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input asp-for="ShowImages" class="form-check-input" />
+                                            <label asp-for="ShowImages" class="form-check-label">Show word images</label>
+                                        </div>
+                                        <div class="form-text ps-4">Display related images for words during quizzes</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input asp-for="ShowAudio" class="form-check-input" />
+                                            <label asp-for="ShowAudio" class="form-check-label">Play audio pronunciations</label>
+                                        </div>
+                                        <div class="form-text ps-4">Enable audio pronunciation during quizzes</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <div class="form-check">
-                                <input asp-for="ShowImages" class="form-check-input" />
-                                <label asp-for="ShowImages" class="form-check-label">Show Word Images</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group text-center mt-4">
-                            <button type="submit" class="btn btn-primary">Save Settings</button>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Settings
+                            </button>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Home
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -55,5 +71,15 @@
 </div>
 
 @section Scripts {
+    <script>
+        function updateValue(value) {
+            document.getElementById("wordsPerQuizNumber").value = value;
+        }
+
+        function updateSlider(value) {
+            const slider = document.getElementById("wordsPerQuiz");
+            slider.value = value;
+        }
+    </script>
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-} 
+}

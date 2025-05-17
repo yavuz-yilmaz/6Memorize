@@ -4,112 +4,387 @@
     ViewData["Title"] = "Learning Progress";
 }
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="text-center">Learning Progress</h3>
+<div class="container py-4">
+    <div class="card shadow border-0 rounded-3">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">
+                    <i class="fas fa-chart-line me-2 text-primary"></i> Your Learning Progress
+                </h3>
+                <div>
+                    <a asp-controller="Quiz" asp-action="Index" class="btn btn-primary">
+                        <i class="fas fa-play me-1"></i> Start New Quiz
+                    </a>
                 </div>
-                <div class="card-body">
-                    @if (TempData["Error"] != null)
-                    {
-                        <div class="alert alert-danger">
-                            @TempData["Error"]
-                        </div>
-                    }
+            </div>
+        </div>
 
-                    @if (TempData["Message"] != null)
-                    {
-                        <div class="alert alert-info">
-                            @TempData["Message"]
-                        </div>
-                    }
+        <div class="card-body">
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert alert-info d-flex align-items-center" role="alert">
+                    <i class="fas fa-info-circle me-3 fa-lg"></i>
+                    <div>@TempData["Message"]</div>
+                </div>
+            }
 
-                    @if (Model.Any())
-                    {
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-book-open fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No learning progress recorded yet</h4>
+                    <p class="text-muted mb-4">Start a quiz to begin tracking your vocabulary progress</p>
+                    <a asp-controller="Quiz" asp-action="Index" class="btn btn-primary">
+                        <i class="fas fa-play me-1"></i> Start Learning
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm bg-light h-100">
+                            <div class="card-body text-center">
+                                <div class="display-4 text-primary mb-2">
+                                    @Model.Count(m => m.IsCompleted)
+                                </div>
+                                <h5 class="card-title">Completed Words</h5>
+                                <div class="progress mt-2" style="height: 8px">
+                                    @{
+                                        var completedPercentage = Model.Any() ?
+                                            (int)((double)Model.Count(m => m.IsCompleted) / Model.Count() * 100) : 0;
+                                    }
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                         style="width: @completedPercentage%"></div>
+                                </div>
+                                <small class="text-muted">@completedPercentage% of vocabulary mastered</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm bg-light h-100">
+                            <div class="card-body text-center">
+                                <div class="display-4 text-warning mb-2">
+                                    @Model.Count(m => !m.IsCompleted)
+                                </div>
+                                <h5 class="card-title">In Progress</h5>
+                                <div class="progress mt-2" style="height: 8px">
+                                    @{
+                                        var avgProgress = Model.Any() && Model.Any(m => !m.IsCompleted) ?
+                                            (int)Model.Where(m => !m.IsCompleted).Average(m => m.CurrentStep) * 14 : 0;
+                                    }
+                                    <div class="progress-bar bg-warning" role="progressbar"
+                                         style="width: @avgProgress%"></div>
+                                </div>
+                                <small class="text-muted">Average step: @(Model.Any() && Model.Any(m => !m.IsCompleted) ? Math.Round(Model.Where(m => !m.IsCompleted).Average(m => m.CurrentStep), 1) : 0)/6</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm bg-light h-100">
+                            <div class="card-body text-center">
+                                <div class="display-4 text-info mb-2">
+                                    @Model.Count(m => m.NextDueDate.Date == DateTime.Today)
+                                </div>
+                                <h5 class="card-title">Due Today</h5>
+                                <div class="text-center mt-3">
+                                    @if (Model.Any(m => m.NextDueDate.Date == DateTime.Today))
+                                    {
+                                        <a asp-controller="Quiz" asp-action="Index" class="btn btn-sm btn-info mt-2">
+                                            <i class="fas fa-play me-1"></i> Practice Now
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success px-3 py-2">
+                                            <i class="fas fa-check me-1"></i> All caught up!
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-search text-muted"></i>
+                                    </span>
+                                    <input type="text" id="searchInput" class="form-control border-start-0"
+                                           placeholder="Search words...">
+                                </div>
+                            </div>
+                            <div class="col-auto ms-auto">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-outline-secondary filter-btn active"
+                                            data-filter="all">All</button>
+                                    <button type="button" class="btn btn-outline-secondary filter-btn"
+                                            data-filter="inprogress">In Progress</button>
+                                    <button type="button" class="btn btn-outline-secondary filter-btn"
+                                            data-filter="completed">Completed</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 18%">Word</th>
-                                        <th style="width: 18%">Translation</th>
-                                        <th style="width: 30%">Progress</th>
-                                        <th style="width: 12%">Last Attempt</th>
-                                        <th style="width: 12%">Next Review</th>
-                                        <th style="width: 10%">Status</th>
-                                    </tr>
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Word</th>
+                                    <th>Translation</th>
+                                    <th>Category</th>
+                                    <th>Progress</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-4">Next Review</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var item in Model)
-                                    {
-                                        <tr>
-                                            <td>@item.Word.EngWordName</td>
-                                            <td>@item.Word.TurWordName</td>
-                                            <td>
-                                                <div class="progress">
-                                                    <div class="progress-bar @(item.IsCompleted ? "bg-success" : "bg-primary")" 
-                                                         role="progressbar" 
-                                                         style="width: @((int)((item.CurrentStep / 6.0) * 100))%" 
-                                                         aria-valuenow="@item.CurrentStep" 
-                                                         aria-valuemin="0" 
-                                                         aria-valuemax="6">
-                                                        @item.CurrentStep / 6
+                                @foreach (var item in Model.OrderBy(w => w.IsCompleted).ThenBy(w => w.NextDueDate))
+                                {
+                                    var progressClass = "";
+                                    if (item.CurrentStep < 2) progressClass = "bg-danger";
+                                    else if (item.CurrentStep < 3) progressClass = "bg-warning";
+                                    else if (item.CurrentStep < 6) progressClass = "bg-info";
+                                    else progressClass = "bg-success";
+
+                                    var statusClass = item.IsCompleted ? "bg-success" :
+                                        (item.LastAttemptSuccess ? "bg-info" : "bg-warning");
+
+                                    var statusText = item.IsCompleted ? "Mastered" :
+                                        (item.LastAttemptSuccess ? "Learning" : "Needs Review");
+
+                                    var statusIcon = item.IsCompleted ? "fa-check-circle" :
+                                        (item.LastAttemptSuccess ? "fa-spinner" : "fa-repeat");
+
+                                    var isDueToday = item.NextDueDate.Date == DateTime.Today;
+                                    var isOverdue = item.NextDueDate.Date < DateTime.Today;
+
+                                    <tr class="word-row @(item.IsCompleted ? "completed" : "inprogress")">
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(item.Word.PicturePath))
+                                                {
+                                                    <div class="word-thumb me-3">
+                                                        <img src="@item.Word.PicturePath" alt="" class="img-fluid">
                                                     </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="word-thumb-placeholder me-3">
+                                                        <i class="fas fa-font"></i>
+                                                    </div>
+                                                }
+                                                <div>
+                                                    <h6 class="mb-0">@item.Word.EngWordName</h6>
+                                                    @if (!string.IsNullOrEmpty(item.Word.AudioPath))
+                                                    {
+                                                        <a href="#" class="text-muted small play-audio"
+                                                           data-audio="@item.Word.AudioPath">
+                                                            <i class="fas fa-volume-up"></i> Listen
+                                                        </a>
+                                                    }
                                                 </div>
-                                            </td>
-                                            <td>
-                                                @if (item.LastAttemptDate != default)
-                                                {
-                                                    <span class="@(item.LastAttemptSuccess ? "text-success" : "text-danger")">
-                                                        @item.LastAttemptDate.ToString("g")
+                                            </div>
+                                        </td>
+                                        <td>@item.Word.TurWordName</td>
+                                        <td>
+                                                <span class="badge bg-light text-dark border">
+                                                    @(string.IsNullOrEmpty(item.Word.Category) ? "General" : item.Word.Category)
+                                                </span>
+                                        </td>
+                                        <td style="width: 150px;">
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                    <div class="progress-bar @progressClass" role="progressbar"
+                                                         style="width: @(item.IsCompleted ? 100 : (item.CurrentStep * 100 / 6))%"
+                                                         aria-valuenow="@item.CurrentStep" aria-valuemin="0"
+                                                         aria-valuemax="6"></div>
+                                                </div>
+                                                <span class="badge bg-light text-dark">@item.CurrentStep/6</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                                <span class="badge @statusClass">
+                                                    <i class="fas @statusIcon me-1"></i> @statusText
+                                                </span>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            @if (item.IsCompleted)
+                                            {
+                                                <span class="badge bg-success">Completed</span>
+                                            }
+                                            else if (isDueToday)
+                                            {
+                                                <span class="badge bg-info">Due Today</span>
+                                            }
+                                            else if (isOverdue)
+                                            {
+                                                <span class="badge bg-danger">
+                                                        @((DateTime.Today - item.NextDueDate.Date).Days) days overdue
                                                     </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted">Not attempted</span>
-                                                }
-                                            </td>
-                                            <td>
-                                                @if (item.IsCompleted)
-                                                {
-                                                    <span class="text-success">Completed</span>
-                                                }
-                                                else
-                                                {
-                                                    @item.NextDueDate.ToString("g")
-                                                }
-                                            </td>
-                                            <td>
-                                                @if (item.IsCompleted)
-                                                {
-                                                    <span class="badge bg-success">Learned</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-primary">In Progress</span>
-                                                }
-                                            </td>
-                                        </tr>
-                                    }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">
+                                                        In @((item.NextDueDate.Date - DateTime.Today).Days) days
+                                                    </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
                                 </tbody>
                             </table>
                         </div>
-                    }
-
-                    <div class="text-center mt-4">
-                        <a asp-action="Index" class="btn btn-primary">Back to Quiz</a>
                     </div>
                 </div>
-            </div>
+            }
         </div>
     </div>
 </div>
 
+<audio id="audioPlayer" class="d-none"></audio>
+
 @section Scripts {
     <script>
-        $(document).ready(function () {
-            // Add any JavaScript functionality here
+        $(document).ready(function() {
+            // Arama işlevselliği
+            $("#searchInput").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $(".word-row").filter(function() {
+                    var text = $(this).text().toLowerCase();
+                    $(this).toggle(text.indexOf(value) > -1);
+                });
+
+                updateEmptyState();
+            });
+
+            // Filtreleme işlevselliği
+            $(".filter-btn").on("click", function() {
+                $(".filter-btn").removeClass("active");
+                $(this).addClass("active");
+
+                var filter = $(this).data("filter");
+                if (filter === "all") {
+                    $(".word-row").show();
+                } else {
+                    $(".word-row").hide();
+                    $(".word-row." + filter).show();
+                }
+
+                updateEmptyState();
+            });
+
+            // Ses dosyası oynatma
+            $(".play-audio").on("click", function(e) {
+                e.preventDefault();
+                var audioSrc = $(this).data("audio");
+                var audioPlayer = $("#audioPlayer")[0];
+
+                audioPlayer.src = audioSrc;
+                audioPlayer.play();
+            });
+
+            function updateEmptyState() {
+                var visibleRows = $(".word-row:visible").length;
+                if (visibleRows === 0) {
+                    if ($(".no-results").length === 0) {
+                        $("tbody").append(
+                            `<tr class="no-results">
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-search fa-2x text-muted mb-3"></i>
+                                    <h5>No matching words found</h5>
+                                    <p class="text-muted mb-0">Try adjusting your search or filter</p>
+                                </td>
+                            </tr>`
+                        );
+                    }
+                } else {
+                    $(".no-results").remove();
+                }
+            }
         });
     </script>
-} 
+}
+
+@section Styles {
+    <style>
+        .card {
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .table > tbody > tr {
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .table > tbody > tr:hover {
+            background-color: #f8f9fa;
+            border-left-color: #3498db;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .btn {
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .badge {
+            font-weight: 500;
+            padding: 0.4em 0.7em;
+        }
+
+        .bg-opacity-10 {
+            --bs-bg-opacity: 0.1;
+        }
+
+        .word-thumb {
+            width: 40px;
+            height: 40px;
+            overflow: hidden;
+            border-radius: 6px;
+        }
+
+        .word-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .word-thumb-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 1.2rem;
+        }
+
+        .filter-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .play-audio {
+            font-size: 0.75rem;
+            text-decoration: none;
+        }
+
+        .play-audio:hover {
+            text-decoration: underline;
+        }
+    </style>
+}

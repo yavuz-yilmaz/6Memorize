@@ -1,239 +1,394 @@
 ﻿@model List<int>
 
 @{
-    ViewData["Title"] = "Word Quiz";
+    ViewData["Title"] = "Quiz";
 }
 
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="text-center">Word Quiz</h3>
-                    <div class="progress">
-                        <div id="quizProgress" class="progress-bar" role="progressbar" style="width: 0%"
-                             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                            0 / @Model.Count
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Word Test</h3>
+                    <span id="quizCounter" class="badge bg-white text-primary rounded-pill">0 / @Model.Count</span>
+                </div>
+
+                <div class="card-body p-4">
+                    @if (Model.Count == 0)
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle text-success fa-4x mb-3"></i>
+                            <h4>Congratulations!</h4>
+                            <p class="text-muted">You have no more words to learn for today.</p>
+                            <a asp-controller="Word" asp-action="Create" class="btn btn-primary mt-3">
+                                <i class="fas fa-plus-circle me-2"></i>Add New Word
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="progress mb-4" style="height: 10px">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"
+                                 id="quizProgress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+
+                        <div id="quizContainer" class="quiz-container">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3">Preparing quiz...</p>
+                            </div>
+                        </div>
+
+                        <div id="quizNavigation" class="text-center mt-4 d-none">
+                            <button id="nextButton" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-arrow-right me-2"></i>Next
+                            </button>
+                            <a asp-action="Progress" class="btn btn-outline-primary btn-lg px-4 ms-2">
+                                <i class="fas fa-tasks me-2"></i>Progress
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.Count > 0)
+                {
+                    <div class="card-footer bg-light border-0 py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span id="wordCategory" class="badge bg-light text-secondary">
+                                <i class="fas fa-tag me-1"></i>Category
+                            </span>
+                            <div>
+                                <span id="completedWords" class="badge bg-success me-2">0 Completed</span>
+                                <span id="remainingWords" class="badge bg-primary">@Model.Count Remaining</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-body">
-                    <div id="quizContainer">
-                        <!-- Question content will be loaded here dynamically -->
-                    </div>
-
-                    <div class="text-center mt-4">
-                        <button id="submitAnswer" class="btn btn-primary">Check Answer</button>
-                        <button id="skipQuestion" class="btn btn-warning">Skip Question</button>
-                        <button id="nextQuestion" class="btn btn-success" style="display:none;">Next Question</button>
-                        <a id="showProgress" asp-action="Progress" class="btn btn-secondary">Show Progress</a>
-                    </div>
-                </div>
+                }
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            // Store quiz data
-            var quizWordIds = @Html.Raw(Json.Serialize(Model));
-            var currentQuestionIndex = 0;
-            var totalQuestions = quizWordIds.length;
-            var currentWordId = 0;
-            var currentWordProgressId = 0;
+<!-- Word Template -->
+<template id="wordTemplate">
+    <div class="quiz-item">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h3 class="text-center mb-4 eng-word"></h3>
 
-            // Get user settings
-            var showAudio = @Json.Serialize(ViewBag.UserSettings.ShowAudio);
-            var showImages = @Json.Serialize(ViewBag.UserSettings.ShowImages);
-
-            // Hide progress button initially
-            $("#showProgress").hide();
-
-            // Load first question
-            loadQuestion(currentQuestionIndex);
-
-            // Question loading function
-            function loadQuestion(index) {
-                if (index >= totalQuestions) {
-                    // Quiz finished
-                    $("#quizContainer").html("<div class='alert alert-success'>Quiz completed! Congratulations.</div>");
-                    // Hide all buttons with CSS directly
-                    $("#submitAnswer").css('display', 'none');
-                    $("#skipQuestion").css('display', 'none');
-                    $("#nextQuestion").css('display', 'none');
-                    $("#showProgress").css('display', 'inline-block');
-                    updateProgress(totalQuestions, totalQuestions);
-                    return;
-                }
-
-                currentWordProgressId = quizWordIds[index];
-
-                // Get word info with AJAX
-                $.post("/Quiz/GetWordProcess", {id: currentWordProgressId})
-                    .done(function (response) {
-                        if (response.success) {
-                            currentWordId = response.wordId;
-
-                            // Create template
-                            var html = `
-            <div class="quiz-item mb-4" data-word-id="${response.wordId}">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">${response.engWordName}</h5>`;
-
-                            if (showImages && response.picturePath) {
-                                html += `
-                <div class="text-center mb-3">
-                    <img src="${response.picturePath}" alt="${response.engWordName}" class="img-fluid" style="max-height: 200px;" />
-                </div>`;
-                            }
-
-                            html += `
-            <div class="form-group">
-                <input type="text" id="answerInput" class="form-control answer-input" placeholder="Enter Turkish translation..."/>
-            </div>
-
-            <div class="feedback mt-2" style="display: none;">
-                <div class="alert" role="alert"></div>
-            </div>`;
-
-                            if (showAudio && response.audioPath) {
-                                html += `
-                <div class="mt-3">
-                    <audio controls class="w-100">
-                        <source src="${response.audioPath}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
-                </div>`;
-                            }
-
-                            html += `
-            <div class="progress mt-3">
-                <div class="progress-bar" role="progressbar" style="width: ${Math.round((response.currentStep / 6.0) * 100)}%"
-                    aria-valuenow="${response.currentStep}" aria-valuemin="0" aria-valuemax="6">
-                    ${response.currentStep} / 6
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <div class="word-image rounded overflow-hidden d-flex align-items-center justify-content-center bg-light" style="height: 240px;">
+                            <img src="" alt="" class="word-picture img-fit" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="audio-player p-3 mb-3">
+                            <audio controls class="w-100 audio-control">
+                                <source src="" type="audio/mpeg" class="word-audio">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                        <div class="example-sentence bg-light p-3 rounded">
+                            <small class="text-muted d-block mb-1"><i class="fas fa-quote-left me-1"></i> Example Sentence</small>
+                            <p class="mb-0 word-sample"></p>
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control answer-input" id="answerInput" placeholder="Write your answer here">
+                    <label for="answerInput"><i class="fas fa-language me-2"></i>Write the Turkish meaning</label>
+                </div>
+
+                <div class="d-grid">
+                    <button class="btn btn-success btn-lg submit-answer">
+                        <i class="fas fa-check me-2"></i>Check Answer
+                    </button>
+                </div>
+
+                <div class="feedback mt-3 d-none">
+                    <div class="alert alert-success d-flex align-items-center">
+                        <i class="fas fa-check-circle me-3 fa-lg"></i>
+                        <div>
+                            <strong>Correct!</strong> <span class="correct-answer"></span>
+                        </div>
                     </div>
                 </div>
             </div>
-        `;
+        </div>
+    </div>
+</template>
 
-                            // Update HTML
-                            $("#quizContainer").html(html);
-                            updateProgress(index, totalQuestions);
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let currentQuestion = 0;
+            let wordProcesses = @Html.Raw(Json.Serialize(Model));
+            let completedWords = 0;
+            let totalWords = wordProcesses.length;
+            let showAudio = @Json.Serialize(ViewBag.UserSettings.ShowAudio);
+            let showImages = @Json.Serialize(ViewBag.UserSettings.ShowImages);
 
-                            // Initially disable button
-                            $("#submitAnswer").prop("disabled", true);
-
-                            // Monitor input changes
-                            $("#answerInput").on("input", function () {
-                                // If input is empty, disable button, otherwise enable it
-                                if ($(this).val().trim() === "") {
-                                    $("#submitAnswer").prop("disabled", true);
-                                } else {
-                                    $("#submitAnswer").prop("disabled", false);
-                                }
-
-                                // If error message is about empty answer, hide it
-                                if ($(".feedback").is(":visible") &&
-                                    $(".feedback .alert").text() === "Please enter an answer!") {
-                                    $(".feedback").hide();
-                                }
-                            });
-
-                            // Submit answer with Enter key
-                            $("#answerInput").keypress(function (e) {
-                                if (e.which == 13) {
-                                    e.preventDefault();
-                                    // Only trigger answer submission if button is active
-                                    if (!$("#submitAnswer").prop("disabled")) {
-                                        $("#submitAnswer").click();
-                                    }
-                                }
-                            });
-
-                            // Focus on input
-                            $("#answerInput").focus();
-                        } else {
-                            $("#quizContainer").html("<div class='alert alert-danger'>An error occurred while loading the word.</div>");
-                        }
-                    })
-                    .fail(function () {
-                        $("#quizContainer").html("<div class='alert alert-danger'>Server error occurred.</div>");
-                    });
+            // Load first question
+            if (wordProcesses.length > 0) {
+                loadQuestion(wordProcesses[currentQuestion]);
+                updateProgress();
             }
 
-            // Update progress bar
-            function updateProgress(current, total) {
-                var percentage = Math.round((current / total) * 100);
-                $("#quizProgress").css("width", percentage + "%");
-                $("#quizProgress").attr("aria-valuenow", percentage);
-                if (current == total)
-                    $("#quizProgress").text((current) + " / " + total + " Completed!");
-                else
-                    // Show current question number
-                    $("#quizProgress").text((current + 1) + " / " + total);
-            }
+            // Next question button click
+            $(document).on('click', '#nextButton', function() {
+                currentQuestion++;
+                if (currentQuestion < wordProcesses.length) {
+                    loadQuestion(wordProcesses[currentQuestion]);
+                    updateProgress();
+                } else {
+                    showCompletion();
+                }
+            });
 
-            // Check answer
-            $("#submitAnswer").click(function () {
-                var answer = $("#answerInput").val().trim();
+            // Submit answer
+            $(document).on('click', '.submit-answer', function() {
+                let answer = $('#answerInput').val().trim();
+                let wordId = $(this).data('word-id');
 
-                // Empty answer check
-                if (!answer) {
-                    $(".feedback").show().find(".alert")
-                        .removeClass("alert-success")
-                        .addClass("alert-danger")
-                        .text("Please enter an answer!");
+                if (answer === '') {
+                    $('#answerInput').addClass('is-invalid');
                     return;
                 }
 
-                var $feedback = $(".feedback");
-                var $alert = $feedback.find(".alert");
+                $.ajax({
+                    url: '@Url.Action("SubmitAnswer")',
+                    type: 'POST',
+                    data: { wordId: wordId, answer: answer },
+                    success: function(response) {
+                        let feedbackDiv = $('.feedback');
+                        feedbackDiv.removeClass('d-none');
 
-                $.post("/Quiz/SubmitAnswer", {wordId: currentWordId, answer: answer})
-                    .done(function (response) {
                         if (response.success) {
-                            $alert.removeClass("alert-danger").addClass("alert-success")
-                                .text("Correct! Congratulations!");
+                            // Correct answer
+                            feedbackDiv.html(`
+                                <div class="alert alert-success d-flex align-items-center">
+                                    <i class="fas fa-check-circle me-3 fa-lg"></i>
+                                    <div>
+                                        <strong>Correct!</strong> "${response.correctAnswer}" is the right answer.
+                                    </div>
+                                </div>
+                            `);
+                            completedWords++;
+                            updateProgress();
                         } else {
-                            $alert.removeClass("alert-success").addClass("alert-danger")
-                                .html("Wrong. Correct answer: <strong>" + response.correctAnswer + "</strong>");
+                            // Wrong answer
+                            feedbackDiv.html(`
+                                <div class="alert alert-danger d-flex align-items-center">
+                                    <i class="fas fa-times-circle me-3 fa-lg"></i>
+                                    <div>
+                                        <strong>Incorrect!</strong> The correct answer is "${response.correctAnswer}".
+                                    </div>
+                                </div>
+                            `);
                         }
-                        $feedback.show();
-                        $("#submitAnswer").hide();
-                        $("#skipQuestion").hide(); // Hide "Skip Question" button
-                        $("#nextQuestion").show();
-                    })
-                    .fail(function () {
-                        $alert.removeClass("alert-success").addClass("alert-danger")
-                            .text("An error occurred. Please try again.");
-                        $feedback.show();
-                    });
+
+                        // Show next button
+                        $('#quizNavigation').removeClass('d-none');
+                        $('.submit-answer').addClass('d-none');
+                        $('#answerInput').attr('disabled', true);
+                    },
+                    error: function() {
+                        $('.feedback').removeClass('d-none').html(`
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                An error occurred. Please try again.
+                            </div>
+                        `);
+                    }
+                });
             });
 
-            // Next question button click
-            $("#nextQuestion").click(function () {
-                $("#submitAnswer").show();
-                $("#skipQuestion").show(); // Show "Skip Question" button again
-                $("#nextQuestion").hide();
-                currentQuestionIndex++;
-                loadQuestion(currentQuestionIndex);
+            // Enter key to submit answer
+            $(document).on('keypress', '#answerInput', function(e) {
+                if (e.which === 13 && !$('.submit-answer').hasClass('d-none')) {
+                    $('.submit-answer').click();
+                }
             });
 
-            // Skip question button click
-            $("#skipQuestion").click(function () {
-                // Adjust visibility
-                $("#submitAnswer").show().prop("disabled", true);
-                $("#nextQuestion").hide();
-                
-                // Go to next question
-                currentQuestionIndex++;
-                loadQuestion(currentQuestionIndex);
-            });
+            function loadQuestion(wordProcessId) {
+                $('#quizContainer').html(`
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                `);
+
+                $('#quizNavigation').addClass('d-none');
+
+                $.ajax({
+                    url: '@Url.Action("GetWordProcess")',
+                    type: 'POST',
+                    data: { id: wordProcessId },
+                    success: function(response) {
+                        if (response.success) {
+                            let template = $('#wordTemplate').html();
+                            let content = $(template);
+
+                            // Fill data
+                            content.find('.eng-word').text(response.engWordName);
+                            content.find('.submit-answer').attr('data-word-id', response.wordId);
+
+                            // Sample sentence
+                            let sample = response.samples && response.samples.length > 0
+                                ? response.samples[0]
+                                : "Example not available";
+
+                            content.find('.word-sample').text(sample);
+
+                            // Image
+                            if (showImages && response.picturePath) {
+                                content.find('.word-picture').attr('src', response.picturePath);
+                            } else {
+                                content.find('.word-image').html('<div class="bg-light text-center p-5"><i class="fas fa-image fa-3x text-muted"></i></div>');
+                            }
+
+                            // Audio
+                            if (showAudio && response.audioPath) {
+                                content.find('.word-audio').attr('src', response.audioPath);
+                            } else {
+                                content.find('.audio-player').html('<div class="bg-light text-center p-3"><i class="fas fa-volume-mute fa-2x text-muted"></i></div>');
+                            }
+
+                            // Category info
+                            $('#wordCategory').html(`<i class="fas fa-tag me-1"></i>${response.category || 'General'}`);
+
+                            $('#quizContainer').html(content);
+                            $('#answerInput').focus();
+
+                            // Update counter
+                            $('#quizCounter').text(`${currentQuestion + 1} / ${totalWords}`);
+                            $('#completedWords').text(`${completedWords} Completed`);
+                            $('#remainingWords').text(`${totalWords - completedWords} Remaining`);
+                        } else {
+                            $('#quizContainer').html("<div class='alert alert-danger'>Failed to load word.</div>");
+                        }
+                    },
+                    error: function() {
+                        $('#quizContainer').html("<div class='alert alert-danger'>Server error occurred.</div>");
+                    }
+                });
+            }
+
+            function updateProgress() {
+                let progress = ((currentQuestion / totalWords) * 100).toFixed(0);
+                $('#quizProgress').css('width', progress + '%').attr('aria-valuenow', progress);
+
+                $('#completedWords').text(`${completedWords} Completed`);
+                $('#remainingWords').text(`${totalWords - completedWords} Remaining`);
+            }
+
+            function showCompletion() {
+                $('#quizContainer').html(`
+                    <div class="text-center py-5">
+                        <i class="fas fa-trophy text-warning fa-5x mb-4"></i>
+                        <h3>Congratulations!</h3>
+                        <p class="lead mb-4">You have completed today's quiz.</p>
+                        <p class="text-muted">Correct answers: ${completedWords}/${totalWords}</p>
+
+                        <div class="mt-4">
+                            <a href="@Url.Action("Index")" class="btn btn-primary btn-lg me-2">
+                                <i class="fas fa-redo me-2"></i>New Quiz
+                            </a>
+                            <a href="@Url.Action("Progress")" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-chart-line me-2"></i>Progress
+                            </a>
+                        </div>
+                    </div>
+                `);
+
+                $('#quizNavigation').addClass('d-none');
+                $('#quizProgress').css('width', '100%').attr('aria-valuenow', 100);
+            }
         });
     </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/quiz.css" />
+    <style>
+        .card {
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .bg-gradient {
+            background-image: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .answer-input {
+            border: 2px solid #e9ecef;
+            padding: 12px;
+            font-size: 1.1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .answer-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+        }
+
+        .eng-word {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .example-sentence {
+            border-left: 4px solid #3498db;
+        }
+
+        .submit-answer {
+            font-size: 1.1rem;
+            padding: 12px;
+        }
+
+        .btn {
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .word-image {
+            height: 240px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.1);
+            background-color: #f8f9fa;
+        }
+
+        .img-fit {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Resim yok ise gösterilecek placeholder */
+        .word-image.no-image::before {
+            content: "\f03e";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 400;
+            font-size: 3rem;
+            color: #dee2e6;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
 }

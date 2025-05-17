@@ -113,3 +113,48 @@ body {
         margin-bottom: 1rem;
     }
 }
+
+/* Navbar için CSS iyileştirmeleri */
+.navbar {
+    padding: 10px 0;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    position: relative;
+}
+
+.hover-effect {
+    transition: all 0.3s ease;
+}
+
+.hover-effect:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    transform: translateY(-2px);
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-item {
+    padding: 8px 20px;
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Mobil görünüm için düzeltmeler */
+@media (max-width: 992px) {
+    .navbar-nav .nav-item {
+        margin: 5px 0;
+    }
+
+    .rounded-pill {
+        border-radius: 0 !important;
+    }
+}

@@ -137,10 +137,10 @@ namespace EnglishApp.Controllers
         public async Task<IActionResult> GetWordProcess(int id)
         {
             var process = await _context.UserWordProgresses
-                    .Include(uwp => uwp.Word)
-                    .ThenInclude(w => w.WordSamples)
-                    .FirstOrDefaultAsync(uwp => uwp.ID == id)
-                ;
+                .Include(uwp => uwp.Word)
+                .ThenInclude(w => w.WordSamples)
+                .FirstOrDefaultAsync(uwp => uwp.ID == id);
+            
             if (process == null)
             {
                 return Json(new { success = false });
@@ -161,7 +161,8 @@ namespace EnglishApp.Controllers
                 nextDueDate = process.NextDueDate,
                 isCompleted = process.IsCompleted,
                 lastAttemptDate = process.LastAttemptDate,
-                lastAttemptSuccess = process.LastAttemptSuccess
+                lastAttemptSuccess = process.LastAttemptSuccess,
+                samples = process.Word.WordSamples.Select(ws => ws.Sample).ToList() // Örnekleri yanıta ekleyin
             });
         }
 
@@ -203,7 +204,7 @@ namespace EnglishApp.Controllers
                     if (isCorrect)
                     {
                         progress.CurrentStep++;
-                        if (progress.CurrentStep >= 7)
+                        if (progress.CurrentStep >= 6)
                         {
                             progress.IsCompleted = true;
                         }

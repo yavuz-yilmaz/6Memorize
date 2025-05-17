@@ -4,71 +4,142 @@
     ViewData["Title"] = "Edit Word";
 }
 
-<div class="container mt-4">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="text-center">Edit Word</h3>
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h3 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Word</h3>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <form asp-action="Edit" method="post" enctype="multipart/form-data">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
                         <input type="hidden" asp-for="WordID" />
 
-                        <div class="form-group mb-3">
-                            <label asp-for="EngWordName" class="control-label">English Word</label>
-                            <input asp-for="EngWordName" class="form-control" />
-                            <span asp-validation-for="EngWordName" class="text-danger"></span>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="EngWordName" class="form-control" placeholder="English Word" autocomplete="off" />
+                                    <label asp-for="EngWordName"><i class="fas fa-language me-2"></i>English Word</label>
+                                    <span asp-validation-for="EngWordName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="TurWordName" class="form-control" placeholder="Turkish Translation" autocomplete="off" />
+                                    <label asp-for="TurWordName"><i class="fas fa-exchange-alt me-2"></i>Turkish Translation</label>
+                                    <span asp-validation-for="TurWordName" class="text-danger"></span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label asp-for="TurWordName" class="control-label">Turkish Translation</label>
-                            <input asp-for="TurWordName" class="form-control" />
-                            <span asp-validation-for="TurWordName" class="text-danger"></span>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label asp-for="Category" class="control-label">Category</label>
-                            <input asp-for="Category" class="form-control" placeholder="Enter category name" />
+                        <div class="form-floating mb-3">
+                            <input asp-for="Category" class="form-control" placeholder="Category" list="categoryOptions" autocomplete="off" />
+                            <label asp-for="Category"><i class="fas fa-tag me-2"></i>Category</label>
                             <span asp-validation-for="Category" class="text-danger"></span>
+                            <datalist id="categoryOptions">
+                                @foreach (var category in ViewBag.Categories)
+                                {
+                                    <option value="@category" />
+                                }
+                            </datalist>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label class="control-label">Picture</label>
-                            @if (!string.IsNullOrEmpty(Model.PicturePath))
-                            {
-                                <div class="mb-2">
-                                    <img src="@Model.PicturePath" class="img-thumbnail" style="max-height: 150px;" />
+                        <!-- Resim ve Ses Dosyası Bölümü -->
+                        <div class="row mb-4">
+                            <!-- Resim Ekleme -->
+                            <div class="col-md-6">
+                                <div class="card hover-card h-100 border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <i class="fas fa-image me-2"></i> Word Image
+                                    </div>
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="text-center mb-3 flex-grow-1 d-flex align-items-center justify-content-center" style="height: 160px;">
+                                            @if (!string.IsNullOrEmpty(Model.PicturePath))
+                                            {
+                                                <img id="picturePreview" src="@Model.PicturePath" alt="Preview" class="img-fluid" style="max-height: 160px;" />
+                                                <div id="emptyPicture" class="text-muted d-none">
+                                                    <i class="fas fa-image fa-3x"></i>
+                                                    <p class="mt-2">No image selected</p>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <img id="picturePreview" src="" alt="Preview" class="img-fluid d-none" style="max-height: 160px;" />
+                                                <div id="emptyPicture" class="text-muted">
+                                                    <i class="fas fa-image fa-3x"></i>
+                                                    <p class="mt-2">No image selected</p>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="d-flex mt-auto">
+                                            <input type="file" id="pictureInput" name="picture" class="form-control" accept="image/*" />
+                                            <button type="button" id="clearPicture" class="btn btn-outline-secondary ms-2">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                            }
-                            <input type="file" name="picture" class="form-control" accept="image/*" />
-                            <small class="text-muted">If you upload a new picture, the current picture will be replaced.</small>
-                        </div>
+                            </div>
 
-                        <div class="form-group mb-3">
-                            <label class="control-label">Audio File</label>
-                            @if (!string.IsNullOrEmpty(Model.AudioPath))
-                            {
-                                <div class="mb-2">
-                                    <audio controls class="w-100">
-                                        <source src="@Model.AudioPath" type="audio/mpeg">
-                                        Your browser does not support the audio element.
-                                    </audio>
+                            <!-- Ses Dosyası Ekleme -->
+                            <div class="col-md-6">
+                                <div class="card hover-card h-100 border-0 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <i class="fas fa-volume-up me-2"></i> Pronunciation
+                                    </div>
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="text-center mb-3 flex-grow-1 d-flex align-items-center justify-content-center" style="height: 160px;">
+                                            @if (!string.IsNullOrEmpty(Model.AudioPath))
+                                            {
+                                                <div id="audioPlayer" class="w-100">
+                                                    <audio controls class="w-100">
+                                                        <source id="audioSource" src="@Model.AudioPath" type="audio/mpeg">
+                                                    </audio>
+                                                </div>
+                                                <div id="emptyAudio" class="text-muted d-none">
+                                                    <i class="fas fa-music fa-3x"></i>
+                                                    <p class="mt-2">No audio selected</p>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div id="audioPlayer" class="d-none w-100">
+                                                    <audio controls class="w-100">
+                                                        <source id="audioSource" src="" type="audio/mpeg">
+                                                    </audio>
+                                                </div>
+                                                <div id="emptyAudio" class="text-muted">
+                                                    <i class="fas fa-music fa-3x"></i>
+                                                    <p class="mt-2">No audio selected</p>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="d-flex mt-auto">
+                                            <input type="file" id="audioInput" name="audio" class="form-control" accept="audio/*" />
+                                            <button type="button" id="clearAudio" class="btn btn-outline-secondary ms-2">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                            }
-                            <input type="file" name="audio" class="form-control" accept="audio/*" />
-                            <small class="text-muted">If you upload a new audio file, the current audio will be replaced.</small>
+                            </div>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label class="control-label">Example Sentences</label>
-                            <div id="samplesContainer">
+                        <div class="card bg-light mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div><i class="fas fa-quote-left me-2"></i>Example Sentences</div>
+                                <button type="button" class="btn btn-sm btn-primary" id="addSample">
+                                    <i class="fas fa-plus"></i> Add Example
+                                </button>
+                            </div>
+                            <div class="card-body" id="samplesContainer">
                                 @if (Model.WordSamples != null && Model.WordSamples.Any())
                                 {
                                     foreach (var sample in Model.WordSamples)
                                     {
                                         <div class="input-group mb-2">
+                                            <span class="input-group-text"><i class="fas fa-quote-right"></i></span>
                                             <input type="text" name="samples[]" class="form-control" value="@sample.Sample" />
                                             <button type="button" class="btn btn-outline-danger remove-sample">
                                                 <i class="fas fa-times"></i>
@@ -79,6 +150,7 @@
                                 else
                                 {
                                     <div class="input-group mb-2">
+                                        <span class="input-group-text"><i class="fas fa-quote-right"></i></span>
                                         <input type="text" name="samples[]" class="form-control" placeholder="Enter an example sentence" />
                                         <button type="button" class="btn btn-outline-danger remove-sample">
                                             <i class="fas fa-times"></i>
@@ -86,14 +158,15 @@
                                     </div>
                                 }
                             </div>
-                            <button type="button" class="btn btn-outline-primary" id="addSample">
-                                <i class="fas fa-plus"></i> Add Another Example
-                            </button>
                         </div>
 
-                        <div class="form-group text-center mt-4">
-                            <button type="submit" class="btn btn-primary">Save</button>
-                            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                        <div class="d-flex justify-content-center gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -106,9 +179,11 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function () {
+            // Örnek cümle ekleme
             $("#addSample").click(function () {
                 var sampleHtml = `
                     <div class="input-group mb-2">
+                        <span class="input-group-text"><i class="fas fa-quote-right"></i></span>
                         <input type="text" name="samples[]" class="form-control" placeholder="Enter an example sentence" />
                         <button type="button" class="btn btn-outline-danger remove-sample">
                             <i class="fas fa-times"></i>
@@ -118,9 +193,78 @@
                 $("#samplesContainer").append(sampleHtml);
             });
 
+            // Örnek cümle silme
             $(document).on("click", ".remove-sample", function () {
-                $(this).closest(".input-group").remove();
+                if ($("#samplesContainer .input-group").length > 1) {
+                    $(this).closest(".input-group").remove();
+                } else {
+                    $(this).closest(".input-group").find("input").val('');
+                }
+            });
+
+            // Resim önizleme
+            $("#pictureInput").change(function () {
+                if (this.files && this.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $("#picturePreview").attr("src", e.target.result).removeClass("d-none");
+                        $("#emptyPicture").addClass("d-none");
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+
+            // Resim temizleme
+            $("#clearPicture").click(function () {
+                $("#pictureInput").val('');
+                $("#picturePreview").addClass("d-none").attr("src", "");
+                $("#emptyPicture").removeClass("d-none");
+            });
+
+            // Ses önizleme
+            $("#audioInput").change(function () {
+                if (this.files && this.files[0]) {
+                    var url = URL.createObjectURL(this.files[0]);
+                    $("#audioSource").attr("src", url);
+                    $("#audioPlayer").removeClass("d-none");
+                    $("#emptyAudio").addClass("d-none");
+                    $("audio")[0].load();
+                }
+            });
+
+            // Ses temizleme
+            $("#clearAudio").click(function () {
+                $("#audioInput").val('');
+                $("#audioSource").attr("src", "");
+                $("#audioPlayer").addClass("d-none");
+                $("#emptyAudio").removeClass("d-none");
             });
         });
     </script>
+}
+
+@section Styles {
+    <style>
+        .hover-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .form-floating > label {
+            padding-left: 1rem;
+        }
+
+        .card-header {
+            font-weight: 500;
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-right: none;
+        }
+    </style>
 }
