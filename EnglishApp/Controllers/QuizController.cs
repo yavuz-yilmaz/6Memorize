@@ -19,7 +19,7 @@ namespace _6Memorize.Controllers
         {
             _context = context;
         }
-
+        
         public async Task<IActionResult> Index()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
