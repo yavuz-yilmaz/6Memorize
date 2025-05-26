@@ -23,6 +23,21 @@ A .NET 8 MVC application that helps users learn English vocabulary through a spa
 ### Trello
 
 ![Sonar Cube](https://i.imgur.com/1wgt4aN.png)
+## Screenshots
+
+![Main Page](https://i.imgur.com/iSlaZ12.png)
+
+![Words Page](https://i.imgur.com/4sTcMaT.png)
+
+![Quiz Page](https://i.imgur.com/U5veqTg.png)
+
+![Wordle](https://i.imgur.com/zv544Vo.png)
+
+![Progress](https://i.imgur.com/r4U21TS.png)
+
+![User Settings](https://i.imgur.com/9iRg6Lm.png)
+
+![Quiz Settings](https://i.imgur.com/sG0SNtD.png)
 
 ## License
 
