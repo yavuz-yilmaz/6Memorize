@@ -1,0 +1,211 @@
+@model _6Memorize.Models.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Profile Settings";
+}
+
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-0">
+                    <div class="bg-primary bg-gradient text-white p-3 rounded-top d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0 fs-4"><i class="fas fa-user-circle me-2"></i>Profile Settings</h2>
+                        </div>
+                        <div>
+                            <a asp-controller="Settings" asp-action="Index" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-cog me-1"></i>Quiz Settings
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="p-4">
+                        @if (TempData["Message"] != null)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show py-2" role="alert">
+                                <i class="fas fa-check-circle me-2"></i> @TempData["Message"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
+
+                        @if (TempData["Error"] != null)
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
+
+                        <!-- Email Information Section -->
+                        <div class="mb-4">
+                            <div class="bg-light p-3 rounded">
+                                <h5 class="mb-3"><i class="fas fa-envelope me-2"></i>Email Information</h5>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <span class="fw-bold">Current Email:</span> @Model.Email
+                                        @if (ViewBag.IsEmailConfirmed ?? false)
+                                        {
+                                            <span class="badge bg-success ms-2">
+                                                <i class="fas fa-check me-1"></i>Verified
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark ms-2">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Not Verified
+                                            </span>
+                                        }
+                                    </div>
+                                    <div>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#updateEmailForm" aria-expanded="false">
+                                            <i class="fas fa-pen me-1"></i>Change Email
+                                        </button>
+                                        @if (!(ViewBag.IsEmailConfirmed ?? false))
+                                        {
+                                            <button type="button" class="btn btn-outline-success btn-sm ms-2" id="resendVerificationBtn">
+                                                <i class="fas fa-paper-plane me-1"></i>Resend Verification
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Collapsible Email Update Form -->
+                                <div class="collapse mt-3" id="updateEmailForm">
+                                    <div class="border rounded p-3 bg-white">
+                                        <form asp-action="UpdateEmail" method="post">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-medium">New Email Address</label>
+                                                <input name="NewEmail" class="form-control" type="email" required />
+                                                <div class="form-text">Enter the new email address you want to use</div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-medium">Current Password</label>
+                                                <input name="Password" class="form-control" type="password" required />
+                                                <div class="form-text">Confirm with your current password</div>
+                                            </div>
+                                            <div>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-save me-1"></i>Update Email
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Password Update Section -->
+                        <div class="mb-4">
+                            <div class="bg-light p-3 rounded">
+                                <h5 class="mb-3"><i class="fas fa-key me-2"></i>Password Management</h5>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <span class="fw-bold">Password:</span> ••••••••••
+                                    </div>
+                                    <div>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#updatePasswordForm" aria-expanded="false">
+                                            <i class="fas fa-pen me-1"></i>Change Password
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsible Password Update Form -->
+                                <div class="collapse mt-3" id="updatePasswordForm">
+                                    <div class="border rounded p-3 bg-white">
+                                        <form asp-action="UpdatePassword" method="post">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-medium">Current Password</label>
+                                                <input name="CurrentPassword" class="form-control" type="password" required />
+                                                <div class="form-text">Enter your current password for verification</div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-medium">New Password</label>
+                                                <input name="NewPassword" class="form-control" type="password" required />
+                                                <div class="form-text">Password must be at least 8 characters long</div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-medium">Confirm New Password</label>
+                                                <input name="ConfirmNewPassword" class="form-control" type="password" required />
+                                                <div class="form-text">Enter the new password again to confirm</div>
+                                            </div>
+
+                                            <div>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-save me-1"></i>Update Password
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between gap-3">
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.getElementById('resendVerificationBtn')?.addEventListener('click', function() {
+            // Ajax call to resend verification email
+            fetch('/Settings/ResendVerificationEmail', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Verification email sent successfully!');
+                    } else {
+                        alert('Error sending verification email: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error sending verification email.');
+                });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .card {
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .btn {
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-check-input:checked {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+    </style>
+}

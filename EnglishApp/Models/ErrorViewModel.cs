@@ -1,4 +1,4 @@
-namespace EnglishApp.Models
+namespace _6Memorize.Models
 {
     public class ErrorViewModel
     {

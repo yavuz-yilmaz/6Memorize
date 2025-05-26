@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@ViewData["Title"] - EnglishApp</title>
+    <title>@ViewData["Title"] - 6Memorize</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
@@ -16,7 +16,7 @@
          style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
         <div class="container">
             <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
-                <i class="fas fa-language me-2 text-primary"></i>EnglishApp
+                <i class="fas fa-language me-2 text-primary"></i>6Memorize
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
                 <span class="navbar-toggler-icon"></span>
@@ -36,21 +36,15 @@
                             </a>
                         </li>
                         <li class="nav-item mx-1">
-                            <a class="nav-link rounded-pill px-3 hover-effect" asp-controller="Quiz"
-                               asp-action="Progress">
-                                <i class="fas fa-tasks me-1"></i> Progress
-                            </a>
-                        </li>
-                        <li class="nav-item mx-1">
-                            <a class="nav-link rounded-pill px-3 hover-effect" asp-controller="Analysis"
-                               asp-action="Index">
-                                <i class="fas fa-chart-line me-1"></i> Analysis
-                            </a>
-                        </li>
-                        <li class="nav-item mx-1">
                             <a class="nav-link rounded-pill px-3 hover-effect" asp-controller="Word"
                                asp-action="Wordle">
                                 <i class="fas fa-gamepad me-1"></i> Wordle
+                            </a>
+                        </li>
+                        <li class="nav-item mx-1">
+                            <a class="nav-link rounded-pill px-3 hover-effect" asp-controller="Quiz"
+                               asp-action="Progress">
+                                <i class="fas fa-tasks me-1"></i> Progress
                             </a>
                         </li>
                     }
@@ -65,7 +59,10 @@
                             </a>
                             <div class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
                                 <a class="dropdown-item" asp-controller="Settings" asp-action="Index">
-                                    <i class="fas fa-cog me-2"></i> Settings
+                                    <i class="fas fa-cog me-2"></i> Quiz Settings
+                                </a>
+                                <a class="dropdown-item" asp-controller="Settings" asp-action="Profile">
+                                    <i class="fas fa-cog me-2"></i> Profile Settings
                                 </a>
                                 <div class="dropdown-divider"></div>
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">

@@ -1,69 +1,73 @@
-@model EnglishApp.Models.WordleViewModel
+@model _6Memorize.Models.WordleViewModel
 @{
     ViewData["Title"] = "Wordle Game";
 }
 
-<div class="container mt-4">
+<div class="container py-3">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg border-0 rounded-lg">
-                <div class="card-header bg-gradient-wordle text-black d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0"><i class="fas fa-puzzle-piece me-2"></i>Wordle Game</h3>
-                </div>
-
-                <div class="card-body p-4">
-                    <p class="lead text-center">Find the English word you've learned!</p>
-                    <div class="text-center mb-4">
-                        <span class="badge bg-info text-white p-2">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Guess the <strong>@Model.WordLength</strong>-letter word
-                        </span>
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-0">
+                    <div class="bg-primary bg-gradient text-white p-3 rounded-top d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0 fs-4"><i class="fas fa-puzzle-piece me-2"></i>Wordle Game</h2>
+                        </div>
+                        <div class="d-flex">
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-home me-1"></i>Home
+                            </a>
+                        </div>
                     </div>
 
-                    <div id="wordle-container" class="mb-4">
-                        <!-- Game board will be created here -->
-                        <div id="board-container" class="d-flex flex-column align-items-center"></div>
-
-                        <div class="input-group mt-4">
-                            <span class="input-group-text bg-light">
-                                <i class="fas fa-keyboard text-primary"></i>
+                    <div class="p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-info">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Find the <strong>@Model.WordLength</strong>-letter word
                             </span>
-                            <input type="text" id="guess-input" class="form-control form-control-lg"
-                                   maxlength="@Model.WordLength" placeholder="Type your guess...">
-                            <button class="btn btn-primary" id="guess-button">
-                                <i class="fas fa-check me-1"></i> Guess
-                            </button>
+                            <span class="badge bg-primary">
+                                <i class="fas fa-tag me-1"></i> @Model.Word.Category
+                            </span>
                         </div>
 
-                        <div class="mt-3">
-                            <div id="message" class="alert" style="display: none;"></div>
-                        </div>
+                        <div id="wordle-container">
+                            <!-- Game board will be created here -->
+                            <div id="board-container" class="d-flex flex-column align-items-center py-2" style="min-height: 300px;"></div>
 
-                        <div class="mt-4 text-center" id="result-container" style="display: none;">
-                            <div class="alert alert-success">
-                                <h4 id="result-message"></h4>
-                                <p id="word-meaning" class="mb-0 mt-2 fs-5"></p>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-keyboard text-primary"></i>
+                                </span>
+                                <input type="text" id="guess-input" class="form-control"
+                                       maxlength="@Model.WordLength" placeholder="Type your guess...">
+                                <button class="btn btn-primary" id="guess-button">
+                                    <i class="fas fa-check me-1"></i> Guess
+                                </button>
                             </div>
-                            <div class="mt-3">
-                                <a asp-controller="Word" asp-action="Wordle" class="btn btn-success ms-2">
-                                    <i class="fas fa-sync me-1"></i> New Game
-                                </a>
-                                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary ms-2">
-                                    <i class="fas fa-home me-1"></i> Home
-                                </a>
+
+                            <div id="message" class="alert mb-3" style="display: none;"></div>
+
+                            <div id="result-container" class="text-center mb-2" style="display: none;">
+                                <div class="alert alert-success py-2">
+                                    <h5 id="result-message" class="mb-1"></h5>
+                                    <p id="word-meaning" class="mb-0 fs-6"></p>
+                                </div>
+                                <div class="mt-3">
+                                    <a asp-controller="Word" asp-action="Wordle" class="btn btn-success">
+                                        <i class="fas fa-sync me-1"></i> New Game
+                                    </a>
+                                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary ms-2">
+                                        <i class="fas fa-home me-1"></i> Home
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="mt-2 text-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-graduation-cap me-1"></i> Selected from words you've learned
+                                </small>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="card-footer bg-light py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted">
-                            <i class="fas fa-graduation-cap me-1"></i> Selected from words you've learned
-                        </span>
-                        <span class="badge bg-primary">
-                            <i class="fas fa-tag me-1"></i> @Model.Word.Category
-                        </span>
                     </div>
                 </div>
             </div>
@@ -75,7 +79,7 @@
     <script src="~/js/wordle.js"></script>
     <script>
         $(document).ready(function() {
-            // Wordle oyununu yapılandırma ile başlat
+            // Initialize Wordle game with configuration
             WordleGame.init({
                 word: "@Model.Word.EngWordName.ToLower()",
                 meaning: "@Model.Word.TurWordName",
@@ -83,8 +87,15 @@
             });
         });
     </script>
+}
 
+@section Styles {
     <style>
+        .card {
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
         #guess-input {
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -99,15 +110,27 @@
         }
 
         #board-container {
-            min-height: 360px;
+            min-height: 250px;
         }
 
-        #guess-button {
-            transition: all 0.2s ease;
+        .btn {
+            transition: all 0.2s;
         }
 
-        #guess-button:hover {
-            transform: translateY(-2px);
+        .btn:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+
+        .progress {
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #e9ecef;
         }
     </style>
 }

@@ -23,7 +23,7 @@ A .NET 8 MVC application for learning English vocabulary using the "6 Sefer Tekr
 1. Clone the repository:
 ```bash
 git clone [repository-url]
-cd EnglishApp
+cd 6Memorize
 ```
 
 2. Install dependencies:

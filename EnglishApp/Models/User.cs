@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace EnglishApp.Models
+namespace _6Memorize.Models
 {
     public class User
     {
@@ -22,6 +22,8 @@ namespace EnglishApp.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginAt { get; set; }
+
+        public bool IsEmailConfirmed { get; set; }
         public bool IsActive { get; set; } = true;
 
         // Navigation properties

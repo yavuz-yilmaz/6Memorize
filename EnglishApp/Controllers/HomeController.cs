@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using EnglishApp.Models;
+using _6Memorize.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EnglishApp.Controllers
+namespace _6Memorize.Controllers
 {
     public class HomeController : Controller
     {

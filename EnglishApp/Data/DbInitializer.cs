@@ -1,7 +1,7 @@
-using EnglishApp.Models;
+using _6Memorize.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace EnglishApp.Data
+namespace _6Memorize.Data
 {
     public static class DbInitializer
     {

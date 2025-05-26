@@ -3,23 +3,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
-using EnglishApp.Models;
-using EnglishApp.Data;
+using _6Memorize.Models;
+using _6Memorize.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Mail;
-using EnglishApp.Services;
+using _6Memorize.Services;
 
-namespace EnglishApp.Controllers
+namespace _6Memorize.Controllers
 {
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly PasswordResetService _passwordResetService;
+        private readonly EmailService _emailService;
 
-        public AccountController(ApplicationDbContext context, PasswordResetService passwordResetService)
+        public AccountController(ApplicationDbContext context, EmailService emailService)
         {
             _context = context;
-            _passwordResetService = passwordResetService;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -40,9 +40,17 @@ namespace EnglishApp.Controllers
                     return View(model);
                 }
 
-                // Hash password (in production, use proper password hashing)
+                // Check if email already exists
+                if (await _context.Users.AnyAsync(u => u.Email == model.Email))
+                {
+                    ModelState.AddModelError("Email", "This email is already registered.");
+                    return View(model);
+                }
+
+                // Hash password
                 model.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
                 model.CreatedAt = DateTime.UtcNow;
+                model.IsEmailConfirmed = false; // Ensure email is not confirmed by default
 
                 _context.Users.Add(model);
                 await _context.SaveChangesAsync();
@@ -55,6 +63,19 @@ namespace EnglishApp.Controllers
                 };
                 _context.UserSettings.Add(settings);
                 await _context.SaveChangesAsync();
+
+                // Send verification email
+                var emailSent = await _emailService.SendVerificationEmail(model.UserID);
+        
+                if (emailSent)
+                {
+                    TempData["Message"] = "Registration successful! Please check your email to verify your account.";
+                }
+                else
+                {
+                    TempData["Warning"] = "Registration successful, but we couldn't send the verification email. You can request a new one from your profile settings.";
+                }
+
                 return RedirectToAction("Login");
             }
             return View(model);
@@ -121,7 +142,7 @@ namespace EnglishApp.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user != null)
             {
-                await _passwordResetService.RequestPasswordReset(email);
+                await _emailService.RequestPasswordReset(email);
             }
             TempData["Message"] = "If an account exists with this email, you will receive password reset instructions.";
             return RedirectToAction("Login");
@@ -157,7 +178,7 @@ namespace EnglishApp.Controllers
         [HttpPost]
         public async Task<IActionResult> ResetPassword(int userId, string token, string newPassword, string confirmPassword)
         {
-            // Token kontrolü
+            // Token validation
             var passwordResetToken = await _context.PasswordResetTokens.FirstOrDefaultAsync(t => t.Token == token);
             if (passwordResetToken == null || passwordResetToken.UserId != userId || passwordResetToken.ExpiryDate < DateTime.UtcNow)
             {
@@ -165,7 +186,7 @@ namespace EnglishApp.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Şifre kontrolü
+            // Password validation
             if (string.IsNullOrEmpty(newPassword) || newPassword.Length < 8)
             {
                 TempData["Error"] = "Password must be at least 8 characters long.";
@@ -173,7 +194,7 @@ namespace EnglishApp.Controllers
                 return View(user);
             }
 
-            // Şifre eşleşme kontrolü
+            // Password matching check
             if (newPassword != confirmPassword)
             {
                 TempData["Error"] = "Passwords don't match.";
@@ -181,7 +202,7 @@ namespace EnglishApp.Controllers
                 return View(user);
             }
 
-            // Kullanıcıyı bul ve şifreyi güncelle
+            // Find user and update password
             var userToUpdate = await _context.Users.FindAsync(userId);
             if (userToUpdate == null)
             {
@@ -189,15 +210,38 @@ namespace EnglishApp.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Şifreyi hashleme
+            // Hash the password
             userToUpdate.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
-    
-            // Token sil
+
+            // Delete token
             _context.PasswordResetTokens.Remove(passwordResetToken);
-    
+
             await _context.SaveChangesAsync();
-    
+
             TempData["Message"] = "Your password has been reset successfully. You can now login with your new password.";
+            return RedirectToAction("Login");
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> VerifyEmail(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                TempData["Error"] = "Invalid verification token.";
+                return RedirectToAction("Login");
+            }
+    
+            var verified = await _emailService.VerifyEmail(token);
+    
+            if (verified)
+            {
+                TempData["Message"] = "Your email has been successfully verified. You can now log in.";
+            }
+            else
+            {
+                TempData["Error"] = "Email verification failed. The token may be invalid or expired.";
+            }
+    
             return RedirectToAction("Login");
         }
     }

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using EnglishApp.Data;
-using EnglishApp.Services;
+using _6Memorize.Data;
+using _6Memorize.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,10 +9,11 @@ builder.Services.AddControllersWithViews();
 
 // Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<PasswordResetService>();
+builder.Services.AddScoped<EmailService>();
 
 // Add Authentication
 builder.Services.AddAuthentication("Cookies")

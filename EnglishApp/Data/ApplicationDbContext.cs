@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using EnglishApp.Models;
+using _6Memorize.Models;
 
-namespace EnglishApp.Data
+namespace _6Memorize.Data
 {
     public class ApplicationDbContext : DbContext
     {
@@ -18,6 +18,7 @@ namespace EnglishApp.Data
         public DbSet<WordPuzzle> WordPuzzles { get; set; }
         public DbSet<WordChainStory> WordChainStories { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+        public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

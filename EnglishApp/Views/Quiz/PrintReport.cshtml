@@ -1,0 +1,161 @@
+@model _6Memorize.Models.ProgressReportViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Learning Progress Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/printReport.css" asp-append-version="true"/>
+</head>
+<body>
+<button class="btn btn-primary print-button" onclick="window.print()">
+    <i class="fas fa-print me-2"></i>Print
+</button>
+
+<div class="report-header">
+    <h1 class="report-title">Vocabulary Learning Progress Report</h1>
+    <p class="report-date">@DateTime.Now.ToString("dd MMMM yyyy, HH:mm")</p>
+</div>
+
+<div class="report-section">
+    <h2 class="section-title">Summary Statistics</h2>
+
+    <div class="stats-container">
+        <div class="stat-box">
+            <div class="stat-title">Total Words</div>
+            <div class="stat-value">@Model.TotalWords</div>
+            <div class="stat-desc">Total number of words in learning process</div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-title">Mastered Words</div>
+            <div class="stat-value">@Model.CompletedWords</div>
+            <div class="stat-desc">Number of fully learned words</div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-title">Completion Rate</div>
+            <div class="stat-value">@Model.CompletionRate.ToString("F1")%</div>
+            <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" style="width: @((int) Model.CompletionRate)%"></div>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-title">Learning Status</div>
+            <div class="stat-value">
+                @if (Model.CompletionRate < 25)
+                {
+                    <span>Beginner</span>
+                }
+                else if (Model.CompletionRate < 50)
+                {
+                    <span>Developing</span>
+                }
+                else if (Model.CompletionRate < 75)
+                {
+                    <span>Good</span>
+                }
+                else
+                {
+                    <span>Excellent</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.CategoryProgress.Any())
+{
+    <div class="report-section">
+        <h2 class="section-title">Progress by Category</h2>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Category</th>
+                <th>Total Words</th>
+                <th>Mastered</th>
+                <th>Success Rate</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var category in Model.CategoryProgress.OrderByDescending(c => c.SuccessRate))
+            {
+                <tr>
+                    <td>@(string.IsNullOrEmpty(category.Category) ? "General" : category.Category)</td>
+                    <td>@category.TotalWords</td>
+                    <td>@category.KnownWords</td>
+                    <td>
+                        @category.SuccessRate.ToString("F1")%
+                        <div class="progress">
+                            <div class="progress-bar @(category.SuccessRate >= 75 ? "bg-success" : category.SuccessRate >= 50 ? "bg-info" : category.SuccessRate >= 25 ? "bg-warning" : "bg-danger")"
+                                 role="progressbar"
+                                 style="width: @((int)category.SuccessRate)%">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="report-section">
+    <h2 class="section-title">Word Details</h2>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>English</th>
+            <th>Turkish</th>
+            <th>Category</th>
+            <th>Progress</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.UserProgress)
+        {
+            var statusText = item.IsCompleted ? "Mastered" :
+                (item.LastAttemptSuccess ? "Learning" : "Needs Review");
+
+            <tr>
+                <td>@item.Word.EngWordName</td>
+                <td>@item.Word.TurWordName</td>
+                <td>@(string.IsNullOrEmpty(item.Word.Category) ? "General" : item.Word.Category)</td>
+                <td>
+                    @item.CurrentStep/6
+                    <div class="progress">
+                        <div class="progress-bar @(item.IsCompleted ? "bg-success" : item.CurrentStep >= 3 ? "bg-info" : item.CurrentStep >= 2 ? "bg-warning" : "bg-danger")"
+                             role="progressbar"
+                             style="width: @((int)(item.IsCompleted ? 100 : (item.CurrentStep * 100 / 6)))%">
+                        </div>
+                    </div>
+                </td>
+                <td>@statusText</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<div class="print-footer">
+    <p>This report was generated by 6Memorize application | @DateTime.Now.ToString("dd.MM.yyyy")</p>
+</div>
+
+<script>
+    window.onload = function() {
+        // Open print dialog automatically
+        setTimeout(function() {
+            window.print();
+        }, 500);
+    };
+</script>
+</body>
+</html>

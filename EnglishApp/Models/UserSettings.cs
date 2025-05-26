@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace EnglishApp.Models
+namespace _6Memorize.Models
 {
     public class UserSettings
     {
@@ -15,9 +15,6 @@ namespace EnglishApp.Models
 
         public bool ShowAudio { get; set; } = true;
         public bool ShowImages { get; set; } = true;
-
-        [Required]
-        public string Theme { get; set; } = "light";
 
         // Navigation property
         public virtual User? User { get; set; } = null;

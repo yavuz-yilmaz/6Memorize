@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using EnglishApp.Models;
-using EnglishApp.Data;
+using _6Memorize.Models;
+using _6Memorize.Data;
 using System.Security.Claims;
 
-namespace EnglishApp.Controllers
+namespace _6Memorize.Controllers
 {
     [Authorize]
     public class WordController : Controller
@@ -19,7 +19,7 @@ namespace EnglishApp.Controllers
             _environment = environment;
         }
 
-        // Kategori listesi için yeni metod
+        // Method for category list
         private void PrepareCategories()
         {
             var categories = new List<string>
@@ -38,7 +38,7 @@ namespace EnglishApp.Controllers
                 "Nature",
                 "Daily Life"
             };
-            
+
             ViewBag.Categories = categories;
         }
 
@@ -89,7 +89,7 @@ namespace EnglishApp.Controllers
                     word.AudioPath = await SaveFile(audio, "audio");
                 }
 
-                // Örnek cümleleri ekle
+                // Add example sentences
                 if (samples != null && samples.Length > 0)
                 {
                     foreach (var sample in samples.Where(s => !string.IsNullOrWhiteSpace(s)))
@@ -155,7 +155,7 @@ namespace EnglishApp.Controllers
                         return NotFound();
                     }
 
-                    // Resim ve ses dosyaları güncelleme
+                    // Update image and audio files
                     if (picture != null)
                     {
                         // Delete old picture if exists
@@ -178,16 +178,16 @@ namespace EnglishApp.Controllers
                         existingWord.AudioPath = await SaveFile(audio, "audio");
                     }
 
-                    // Temel kelime özelliklerini güncelle
+                    // Update basic word properties
                     existingWord.EngWordName = word.EngWordName;
                     existingWord.TurWordName = word.TurWordName;
                     existingWord.Category = word.Category;
 
-                    // Örnek cümleleri güncelle
-                    // Önce mevcut örnekleri temizle
+                    // Update example sentences
+                    // First clear existing examples
                     _context.WordSamples.RemoveRange(existingWord.WordSamples);
 
-                    // Sonra yeni örnekleri ekle
+                    // Then add new examples
                     if (samples != null && samples.Length > 0)
                     {
                         foreach (var sample in samples.Where(s => !string.IsNullOrWhiteSpace(s)))
@@ -303,7 +303,7 @@ namespace EnglishApp.Controllers
                 System.IO.File.Delete(fullPath);
             }
         }
-        
+
         // GET: Word/Wordle
         public async Task<IActionResult> Wordle()
         {
@@ -315,25 +315,25 @@ namespace EnglishApp.Controllers
 
             var userId = int.Parse(userIdClaim.Value);
 
-            // Kullanıcının ilerleme kaydettiği (en az bir kez doğru cevapladığı) kelimeleri getir
+            // Get words that the user has made progress on (answered correctly at least once)
             var learnedWords = await _context.UserWordProgresses
                 .Include(uwp => uwp.Word)
                 .Where(uwp => uwp.UserID == userId && uwp.CurrentStep > 0)
                 .Select(uwp => uwp.Word)
                 .ToListAsync();
 
-            // Eğer öğrenilen kelime yoksa uyarı mesajı göster
+            // If there are no learned words, show a warning message
             if (learnedWords == null || !learnedWords.Any())
             {
-                TempData["Warning"] = "Henüz öğrendiğiniz kelime bulunmuyor. Önce quiz bölümünden kelimeler öğrenin.";
-                return RedirectToAction("Index", "Home");
+                TempData["Warning"] = "You don't have any words to play Wordle yet. Start by working on words in the quiz section.";
+                return RedirectToAction("Index", "Word");
             }
 
-            // Öğrenilen kelimelerden rastgele birini seç
+            // Select a random word from learned words
             var random = new Random();
             var selectedWord = learnedWords[random.Next(learnedWords.Count)];
 
-            // WordleViewModel oluştur
+            // Create WordleViewModel
             var viewModel = new WordleViewModel
             {
                 Word = selectedWord,

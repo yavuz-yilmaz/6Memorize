@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using EnglishApp.Models;
-using EnglishApp.Data;
+using _6Memorize.Models;
+using _6Memorize.Data;
 using System.Security.Claims;
 using System.Linq;
 using System.Collections.Generic;
 using System;
 
-namespace EnglishApp.Controllers
+namespace _6Memorize.Controllers
 {
     [Authorize]
     public class QuizController : Controller
@@ -45,16 +45,15 @@ namespace EnglishApp.Controllers
                     UserID = userId,
                     WordsPerQuiz = 10,
                     ShowAudio = true,
-                    ShowImages = true,
-                    Theme = "light"
+                    ShowImages = true
                 };
                 _context.UserSettings.Add(userSettings);
                 await _context.SaveChangesAsync();
             }
-            // Kaç yeni kelime alınacak
+            // Number of new words to get
             var wordsPerQuiz = userSettings.WordsPerQuiz;
 
-            // 1. Önceki günlerden gelen ve tekrar edilmesi gereken kelimeleri al
+            // 1. Get words from previous days that need to be reviewed
             var dueWords = await _context.UserWordProgresses
                 .Include(uwp => uwp.Word)
                 .ThenInclude(w => w.WordSamples)
@@ -66,13 +65,13 @@ namespace EnglishApp.Controllers
 
             if (wordsPerQuiz > 0)
             {
-                // Şu anda kullanıcının progress kaydı olan kelimelerin ID'lerini al
+                // Get IDs of words that the user already has progress records for
                 var existingWordIds = await _context.UserWordProgresses
                     .Where(uwp => uwp.UserID == userId)
                     .Select(uwp => uwp.WordID)
                     .ToListAsync();
 
-                // 2. Henüz öğrenilmemiş yeni kelimeleri getir
+                // 2. Get new words that haven't been learned yet
                 var newWords = await _context.Words
                     .Include(w => w.WordSamples)
                     .Where(w => !existingWordIds.Contains(w.WordID))
@@ -80,7 +79,7 @@ namespace EnglishApp.Controllers
                     .Take(wordsPerQuiz)
                     .ToListAsync();
 
-                // Yeni kelimeler için progress kaydı oluştur
+                // Create progress records for new words
                 foreach (var word in newWords)
                 {
                     var progress = new UserWordProgress
@@ -103,7 +102,7 @@ namespace EnglishApp.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                // 3. Yeterli yeni kelime yoksa, mevcut ama tamamlanmamış kelimelerden ekle
+                // 3. If there aren't enough new words, add existing but incomplete words
                 if (dueWords.Count < wordsPerQuiz)
                 {
                     var additionalWords = await _context.UserWordProgresses
@@ -121,11 +120,11 @@ namespace EnglishApp.Controllers
                 }
             }
 
-            // Kelimeleri karıştır
+            // Shuffle the words
             var random = new Random();
             dueWords = dueWords.OrderBy(x => random.Next()).ToList();
 
-            // Sadece ID'leri göndermek için liste oluştur
+            // Create a list to send only IDs
             var wordProgressIds = dueWords.Select(w => w.ID).ToList();
             
             ViewBag.UserSettings = userSettings;
@@ -162,7 +161,7 @@ namespace EnglishApp.Controllers
                 isCompleted = process.IsCompleted,
                 lastAttemptDate = process.LastAttemptDate,
                 lastAttemptSuccess = process.LastAttemptSuccess,
-                samples = process.Word.WordSamples.Select(ws => ws.Sample).ToList() // Örnekleri yanıta ekleyin
+                samples = process.Word.WordSamples.Select(ws => ws.Sample).ToList() // Add examples to the response
             });
         }
 
@@ -179,7 +178,7 @@ namespace EnglishApp.Controllers
 
                 var userId = int.Parse(userIdClaim.Value);
 
-                //Is word exist
+                // Check if word exists
                 var word = await _context.Words.FirstOrDefaultAsync(w => w.WordID == wordId);
                 if (word == null)
                 {
@@ -197,7 +196,7 @@ namespace EnglishApp.Controllers
 
                 if (!String.IsNullOrEmpty(answer))
                 {
-                    var isCorrect = answer.Trim().Equals(progress.Word.TurWordName, StringComparison.OrdinalIgnoreCase);
+                    var isCorrect = answer.Trim().Equals(progress.Word.EngWordName, StringComparison.OrdinalIgnoreCase);
                     progress.LastAttemptDate = DateTime.UtcNow;
                     progress.LastAttemptSuccess = isCorrect;
 
@@ -226,11 +225,10 @@ namespace EnglishApp.Controllers
                         nextDueDate = progress.NextDueDate,
                         isCompleted = progress.IsCompleted,
                         currentStep = progress.CurrentStep,
-                        correctAnswer = progress.Word.TurWordName
+                        correctAnswer = progress.Word.EngWordName
                     });
                 }
-
-                return Json(new { success = false, message = "No answer entered", correctAnswer = progress.Word.TurWordName });
+                return Json(new { success = false, message = "No answer entered", correctAnswer = progress.Word.EngWordName });
             }
             catch (Exception ex)
             {
@@ -243,14 +241,14 @@ namespace EnglishApp.Controllers
         {
             return currentStep switch
             {
-                0 => DateTime.UtcNow, // İlk görüşme
-                1 => DateTime.UtcNow.AddDays(1), // 1 gün sonra
-                2 => DateTime.UtcNow.AddDays(7), // 1 hafta sonra
-                3 => DateTime.UtcNow.AddDays(30), // 1 ay sonra
-                4 => DateTime.UtcNow.AddDays(90), // 3 ay sonra
-                5 => DateTime.UtcNow.AddDays(180), // 6 ay sonra
-                6 => DateTime.UtcNow.AddDays(365), // 1 yıl sonra
-                _ => DateTime.UtcNow // Varsayılan olarak şimdi
+                0 => DateTime.UtcNow, // First encounter
+                1 => DateTime.UtcNow.AddDays(1), // After 1 day
+                2 => DateTime.UtcNow.AddDays(7), // After 1 week
+                3 => DateTime.UtcNow.AddDays(30), // After 1 month
+                4 => DateTime.UtcNow.AddDays(90), // After 3 months
+                5 => DateTime.UtcNow.AddDays(180), // After 6 months
+                6 => DateTime.UtcNow.AddDays(365), // After 1 year
+                _ => DateTime.UtcNow // Default is now
             };
         }
 
@@ -265,18 +263,23 @@ namespace EnglishApp.Controllers
                 }
 
                 var userId = int.Parse(userIdClaim.Value);
-                var progress = await _context.UserWordProgresses
+                var progresses = await _context.UserWordProgresses
                     .Include(uwp => uwp.Word)
                     .Where(uwp => uwp.UserID == userId && uwp.CurrentStep != 0)
                     .OrderByDescending(uwp => uwp.LastAttemptDate)
                     .ToListAsync();
 
-                if (!progress.Any())
+                if (!progresses.Any())
                 {
                     TempData["Message"] = "You haven't started learning any words yet. Start a quiz to begin!";
                 }
 
-                return View(progress);
+                var progressViewModel = new ProgressViewModel
+                {
+                    UserWordProgresses = progresses,
+                    TotalWords = await _context.Words.CountAsync()
+                };
+                return View(progressViewModel);
             }
             catch (Exception ex)
             {
@@ -284,6 +287,58 @@ namespace EnglishApp.Controllers
                 TempData["Error"] = "An error occurred while loading your progress. Please try again.";
                 return RedirectToAction("Index");
             }
+        }
+        
+        public async Task<IActionResult> PrintReport()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = int.Parse(userIdClaim.Value);
+    
+            // Get user progress information
+            var progress = await _context.UserWordProgresses
+                .Include(uwp => uwp.Word)
+                .Where(uwp => uwp.UserID == userId && uwp.CurrentStep != 0)
+                .OrderByDescending(uwp => uwp.LastAttemptDate)
+                .ToListAsync();
+
+            // Progress metrics
+            int totalWords = await _context.Words.CountAsync();
+            int completedWords = progress.Count(m => m.IsCompleted);
+            double completionRate = totalWords > 0 ? (double)completedWords / totalWords * 100 : 0;
+
+            // Category-based progress analysis
+            var categoryProgress = await _context.Words
+                .GroupJoin(
+                    _context.UserWordProgresses.Where(uwp => uwp.UserID == userId && uwp.CurrentStep > 0),
+                    word => word.WordID,
+                    uwp => uwp.WordID,
+                    (word, uwps) => new { Word = word, Progresses = uwps })
+                .GroupBy(x => x.Word.Category)
+                .Select(g => new CategoryProgressViewModel
+                {
+                    Category = g.Key,
+                    TotalWords = g.Count(),
+                    KnownWords = g.Sum(x => x.Progresses.Count(p => p.IsCompleted)),
+                    SuccessRate = g.Count() > 0 ? 
+                        (double)g.Sum(x => x.Progresses.Count(p => p.IsCompleted)) / g.Count() * 100 : 0
+                })
+                .ToListAsync();
+
+            var model = new ProgressReportViewModel
+            {
+                UserProgress = progress,
+                TotalWords = totalWords,
+                CompletedWords = completedWords,
+                CompletionRate = completionRate,
+                CategoryProgress = categoryProgress
+            };
+
+            return View(model);
         }
     }
 }

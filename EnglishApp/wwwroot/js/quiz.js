@@ -119,7 +119,7 @@ $(document).ready(function () {
                     let content = $(template);
 
                     // Verileri doldur
-                    content.find('.eng-word').text(response.engWordName);
+                    content.find('.tur-word').text(response.turWordName);
                     content.find('.submit-answer').attr('data-word-id', response.wordId);
 
                     // Örnek cümle

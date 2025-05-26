@@ -1,34 +1,41 @@
-@model EnglishApp.Models.UserSettings
+@model _6Memorize.Models.UserSettings
 
 @{
-    ViewData["Title"] = "Settings";
+    ViewData["Title"] = "Quiz Settings";
 }
 
-<div class="container py-4">
+<div class="container py-3">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0"><i class="fas fa-cog me-2"></i>Settings</h3>
-                </div>
-                <div class="card-body p-4">
-                    @if (TempData["Message"] != null)
-                    {
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="fas fa-check-circle me-2"></i> @TempData["Message"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-0">
+                    <div class="bg-primary bg-gradient text-white p-3 rounded-top d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0 fs-4"><i class="fas fa-cog me-2"></i>Quiz Settings</h2>
                         </div>
-                    }
+                        <div>
+                            <a asp-controller="Settings" asp-action="Profile" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-user-circle me-1"></i>Profile Settings
+                            </a>
+                        </div>
+                    </div>
 
-                    <form asp-action="Update" method="post">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    <div class="p-4">
+                        @if (TempData["Message"] != null)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show py-2" role="alert">
+                                <i class="fas fa-check-circle me-2"></i> @TempData["Message"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
 
-                        <div class="mb-4">
-                            <h5><i class="fas fa-sliders-h me-2"></i>Quiz Settings</h5>
-                            <div class="card bg-light">
-                                <div class="card-body">
+                        <form asp-action="UpdateQuizSettings" method="post">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                            <div class="mb-4">
+                                <div class="bg-light p-3 rounded">
                                     <div class="mb-3">
-                                        <label asp-for="WordsPerQuiz" class="form-label">Words per quiz</label>
+                                        <label asp-for="WordsPerQuiz" class="form-label fw-medium">Words per quiz</label>
                                         <div class="input-group">
                                             <input asp-for="WordsPerQuiz" type="range" class="form-range" min="1" max="50" id="wordsPerQuiz" oninput="updateValue(this.value)" />
                                             <input asp-for="WordsPerQuiz" type="number" class="form-control w-25" min="1" max="50" id="wordsPerQuizNumber" oninput="updateSlider(this.value)" />
@@ -39,31 +46,31 @@
                                     <div class="mb-3">
                                         <div class="form-check form-switch">
                                             <input asp-for="ShowImages" class="form-check-input" />
-                                            <label asp-for="ShowImages" class="form-check-label">Show word images</label>
+                                            <label asp-for="ShowImages" class="form-check-label fw-medium">Show word images</label>
                                         </div>
                                         <div class="form-text ps-4">Display related images for words during quizzes</div>
                                     </div>
 
-                                    <div class="mb-3">
+                                    <div class="mb-0">
                                         <div class="form-check form-switch">
                                             <input asp-for="ShowAudio" class="form-check-input" />
-                                            <label asp-for="ShowAudio" class="form-check-label">Play audio pronunciations</label>
+                                            <label asp-for="ShowAudio" class="form-check-label fw-medium">Play audio pronunciations</label>
                                         </div>
                                         <div class="form-text ps-4">Enable audio pronunciation during quizzes</div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save Settings
-                            </button>
-                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-2"></i>Back to Home
-                            </a>
-                        </div>
-                    </form>
+                            <div class="d-flex justify-content-between gap-3">
+                                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Home
+                                </a>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="fas fa-save me-2"></i>Save Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -77,9 +84,48 @@
         }
 
         function updateSlider(value) {
-            const slider = document.getElementById("wordsPerQuiz");
-            slider.value = value;
+            document.getElementById("wordsPerQuiz").value = value;
         }
     </script>
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+@section Styles {
+    <style>
+        .card {
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .btn {
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-check-input:checked {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+
+        .form-range::-webkit-slider-thumb {
+            background: #3498db;
+        }
+
+        .form-range::-moz-range-thumb {
+            background: #3498db;
+        }
+
+        .form-range::-ms-thumb {
+            background: #3498db;
+        }
+
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+    </style>
 }

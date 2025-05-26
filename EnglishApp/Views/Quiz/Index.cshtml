@@ -1,71 +1,82 @@
 ﻿@model List<int>
 
 @{
-    ViewData["Title"] = "Quiz";
+    ViewData["Title"] = "Vocabulary Quiz";
 }
 
-<div class="container mt-4">
+<div class="container py-3">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-gradient-wordle text-black d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Word Test</h3>
-                    <span id="quizCounter" class="badge bg-white text-primary rounded-pill">0 / @Model.Count</span>
-                </div>
-
-                <div class="card-body p-4">
-                    @if (Model.Count == 0)
-                    {
-                        <div class="text-center py-5">
-                            <i class="fas fa-check-circle text-success fa-4x mb-3"></i>
-                            <h4>Congratulations!</h4>
-                            <p class="text-muted">You have no more words to learn for today.</p>
-                            <a asp-controller="Word" asp-action="Create" class="btn btn-primary mt-3">
-                                <i class="fas fa-plus-circle me-2"></i>Add New Word
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-0">
+                    <div class="bg-primary bg-gradient text-white p-3 rounded-top d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0 fs-4"><i class="fas fa-graduation-cap me-2"></i>Vocabulary Quiz</h2>
+                        </div>
+                        <div class="d-flex">
+                            <a asp-controller="Quiz" asp-action="Progress" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-chart-line me-1"></i>View Progress
                             </a>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="progress mb-4" style="height: 10px">
-                            <div class="progress-bar" role="progressbar" style="width: 0%"
-                                 id="quizProgress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-
-                        <div id="quizContainer" class="quiz-container">
-                            <div class="text-center py-4">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="mt-3">Preparing quiz...</p>
-                            </div>
-                        </div>
-
-                        <div id="quizNavigation" class="text-center mt-4 d-none">
-                            <button id="nextButton" class="btn btn-primary btn-lg px-5">
-                                <i class="fas fa-arrow-right me-2"></i>Next
-                            </button>
-                            <a asp-action="Progress" class="btn btn-outline-primary btn-lg px-4 ms-2">
-                                <i class="fas fa-tasks me-2"></i>Progress
-                            </a>
-                        </div>
-                    }
-                </div>
-
-                @if (Model.Count > 0)
-                {
-                    <div class="card-footer bg-light border-0 py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span id="wordCategory" class="badge bg-light text-secondary">
-                                <i class="fas fa-tag me-1"></i>Category
-                            </span>
-                            <div>
-                                <span id="completedWords" class="badge bg-success me-2">0 Completed</span>
-                                <span id="remainingWords" class="badge bg-primary">@Model.Count Remaining</span>
-                            </div>
                         </div>
                     </div>
-                }
+
+                    <div class="p-3">
+                        @if (Model.Count == 0)
+                        {
+                            <div class="text-center py-4">
+                                <i class="fas fa-check-circle text-success fa-4x mb-3"></i>
+                                <h4>Congratulations!</h4>
+                                <p class="text-muted mb-3">You have no more words to learn for today.</p>
+                                <div class="d-flex justify-content-center gap-3">
+                                    <a asp-controller="Word" asp-action="Create" class="btn btn-primary">
+                                        <i class="fas fa-plus-circle me-2"></i>Add New Words
+                                    </a>
+                                    <a asp-controller="Quiz" asp-action="Progress" class="btn btn-outline-primary">
+                                        <i class="fas fa-chart-line me-2"></i>View Progress
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="quiz-progress mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div>
+                                        <span id="completedWords" class="badge bg-success me-1">0 Completed</span>
+                                        <span id="remainingWords" class="badge bg-primary">@Model.Count Remaining</span>
+                                    </div>
+                                    <span id="quizCounter" class="badge bg-primary rounded-pill">0 / @Model.Count</span>
+                                </div>
+                                <div class="progress" style="height: 6px">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%"
+                                         id="quizProgress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+
+                            <div id="quizContainer" class="quiz-container">
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-3">Preparing your quiz...</p>
+                                </div>
+                            </div>
+
+                            <div id="quizNavigation" class="d-flex justify-content-between mt-2 d-none">
+                                <div class="d-flex align-items-center">
+                                    <span id="wordCategory" class="badge bg-light text-secondary">
+                                        <i class="fas fa-tag me-1"></i>Category
+                                    </span>
+                                </div>
+                                <div>
+                                    <button id="nextButton" class="btn btn-primary px-3">
+                                        <i class="fas fa-arrow-right me-1"></i>Next
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -74,47 +85,45 @@
 <!-- Word Template -->
 <template id="wordTemplate">
     <div class="quiz-item">
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body p-4">
-                <h3 class="text-center mb-4 eng-word"></h3>
-
-                <div class="row mb-4">
-                    <div class="col-md-6 mb-3 mb-md-0">
-                        <div class="word-image rounded overflow-hidden d-flex align-items-center justify-content-center bg-light" style="height: 240px;">
+        <div class="quiz-content">
+            <div class="row align-items-center">
+                <div class="col-md-5">
+                    <div class="d-flex flex-column gap-2">
+                        <h3 class="tur-word text-center mb-1"></h3>
+                        <div class="word-image rounded overflow-hidden d-flex align-items-center justify-content-center bg-light">
                             <img src="" alt="" class="word-picture img-fit" />
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="audio-player p-3 mb-3">
+                        <div class="audio-player bg-light rounded p-2">
                             <audio controls class="w-100 audio-control">
                                 <source src="" type="audio/mpeg" class="word-audio">
                                 Your browser does not support the audio element.
                             </audio>
                         </div>
-                        <div class="example-sentence bg-light p-3 rounded">
-                            <small class="text-muted d-block mb-1"><i class="fas fa-quote-left me-1"></i> Example Sentence</small>
-                            <p class="mb-0 word-sample"></p>
-                        </div>
                     </div>
                 </div>
+                <div class="col-md-7">
+                    <!-- Örnek cümleleri içeren div - başlangıçta gizli -->
+                    <div class="example-sentence bg-light p-3 rounded mb-3 d-none">
+                        <small class="text-muted d-block mb-1"><i class="fas fa-quote-left me-1"></i> Example Sentence</small>
+                        <p class="mb-0 word-sample"></p>
+                    </div>
 
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control answer-input" id="answerInput" placeholder="Write your answer here">
-                    <label for="answerInput"><i class="fas fa-language me-2"></i>Write the Turkish meaning</label>
-                </div>
+                    <div class="form-floating mb-2">
+                        <input type="text" class="form-control answer-input" id="answerInput" placeholder="Write your answer here">
+                        <label for="answerInput"><i class="fas fa-language me-2"></i>Write the English meaning</label>
+                    </div>
 
-                <div class="d-grid">
-                    <button class="btn btn-success btn-lg submit-answer">
-                        <i class="fas fa-check me-2"></i>Check Answer
-                    </button>
-                </div>
-
-                <div class="feedback mt-3 d-none">
-                    <div class="alert alert-success d-flex align-items-center">
-                        <i class="fas fa-check-circle me-3 fa-lg"></i>
-                        <div>
-                            <strong>Correct!</strong> <span class="correct-answer"></span>
+                    <div class="feedback mb-3 d-none">
+                        <div class="alert alert-success d-flex align-items-center py-2">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <div><strong>Correct!</strong> <span class="correct-answer"></span></div>
                         </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-success submit-answer">
+                            <i class="fas fa-check me-1"></i>Check Answer
+                        </button>
                     </div>
                 </div>
             </div>
@@ -122,15 +131,27 @@
     </div>
 </template>
 
+<audio id="audioPlayer" class="d-none"></audio>
+
 @section Scripts {
     <script src="~/js/quiz.js"></script>
     <script>
         $(document).ready(function() {
-            // Quiz uygulamasını yapılandırma ile başlat
+            // Initialize quiz application with configuration
             QuizApp.init({
                 wordProcesses: @Html.Raw(Json.Serialize(Model)),
                 showAudio: @Json.Serialize(ViewBag.UserSettings.ShowAudio),
                 showImages: @Json.Serialize(ViewBag.UserSettings.ShowImages)
+            });
+
+            // Örnek cümleleri cevaptan sonra göstermek için özel bir olay dinleyici ekleyin
+            $(document).on('click', '.submit-answer', function() {
+                // Submit butonuna tıklandığında, yalnızca o anda görüntülenen quiz-item'daki
+                // örnek cümle div'ini göster (setTimeout ile göstermeyi cevabın işlenmesinden sonraya erteliyoruz)
+                let $quizItem = $(this).closest('.quiz-item');
+                setTimeout(function() {
+                    $quizItem.find('.example-sentence').removeClass('d-none');
+                }, 500); // 500ms bekle (cevabın işlenmesi için)
             });
         });
     </script>
@@ -139,48 +160,27 @@
 @section Styles {
     <style>
         .card {
-            border-radius: 1rem;
+            border-radius: 0.75rem;
             overflow: hidden;
         }
 
-        .answer-input {
-            border: 2px solid #e9ecef;
-            padding: 12px;
-            font-size: 1.1rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s;
+        .quiz-content {
+            padding: 0.75rem;
+            background-color: white;
+            border-radius: 0.75rem;
         }
 
-        .answer-input:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
-        }
-
-        .eng-word {
-            font-size: 2.2rem;
-            font-weight: 700;
+        .tur-word {
+            font-size: 1.5rem;
+            font-weight: 600;
             color: #2c3e50;
         }
 
-        .example-sentence {
-            border-left: 4px solid #3498db;
-        }
-
-        .submit-answer {
-            font-size: 1.1rem;
-            padding: 12px;
-        }
-
-        .btn {
-            transition: all 0.3s;
-        }
-
         .word-image {
-            height: 240px;
+            height: 160px;
             position: relative;
             overflow: hidden;
             border: 1px solid rgba(0,0,0,0.1);
-            background-color: #f8f9fa;
         }
 
         .img-fit {
@@ -191,17 +191,59 @@
             margin: 0 auto;
         }
 
-        /* Resim yok ise gösterilecek placeholder */
+        .audio-control {
+            height: 32px;
+        }
+
+        .answer-input {
+            border: 1px solid #e9ecef;
+            transition: all 0.2s;
+        }
+
+        .answer-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+        }
+
+        .example-sentence {
+            border-left: 4px solid #3498db;
+            font-size: 0.95rem;
+        }
+
+        .btn {
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .progress {
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #e9ecef;
+        }
+
         .word-image.no-image::before {
             content: "\f03e";
             font-family: "Font Awesome 5 Free";
             font-weight: 400;
-            font-size: 3rem;
+            font-size: 2.5rem;
             color: #dee2e6;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+        }
+
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+
+        .alert {
+            margin-bottom: 0;
         }
     </style>
 }
