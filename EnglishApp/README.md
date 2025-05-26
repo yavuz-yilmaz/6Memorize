@@ -23,3 +23,7 @@ A .NET 8 MVC application that helps users learn English vocabulary through a spa
 ### Trello
 
 ![Sonar Cube](https://i.imgur.com/1wgt4aN.png)
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
