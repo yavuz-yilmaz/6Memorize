@@ -488,3 +488,5 @@ Old-migrations.zip
 6Memorize.csproj.user
 6Memorize.sln
 wwwroot/lib/
+appsettings.json
+.sonarcube/

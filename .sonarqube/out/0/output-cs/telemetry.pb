@@ -1,1 +1,0 @@
-XRBC:\Users\Yavuz\source\repos\EnglishApp\EnglishApp\6Memorize.csproj¢net8.0òCSharp12
